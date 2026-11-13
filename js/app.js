@@ -1686,10 +1686,8 @@ async function loadBusinessIntelligence() {
     const previousProfit =
       previousRevenue - previousCogs - previousExpenseTotal;
 
-    // Build the performance chart.
-    // Keep chart dates aligned with the advisor's current period.
+    // Build grouped sales and operating-expense bar chart.
     const chartStart = new Date(periodStart);
-
     const monthly = selectedDays === 365;
     const buckets = new Map();
 
@@ -1719,24 +1717,24 @@ async function loadBusinessIntelligence() {
         ? new Date(now.getFullYear(), now.getMonth() - 11 + i, 1)
         : new Date(chartStart);
 
-      if (!monthly) {
-        date.setDate(date.getDate() + i);
-      }
+      if (!monthly) date.setDate(date.getDate() + i);
 
       const key = bucketKey(date);
       buckets.set(key, { key, sales: 0, expenses: 0 });
     }
 
     sales.forEach(sale => {
-      const key = bucketKey(new Date(sale.sold_at));
-      if (buckets.has(key)) {
+      const date = new Date(sale.sold_at);
+      const key = bucketKey(date);
+      if (date >= periodStart && date <= now && buckets.has(key)) {
         buckets.get(key).sales += Number(sale.total_amount || 0);
       }
     });
 
     operatingExpenses.forEach(expense => {
-      const key = bucketKey(new Date(expense.spent_at));
-      if (buckets.has(key)) {
+      const date = new Date(expense.spent_at);
+      const key = bucketKey(date);
+      if (date >= periodStart && date <= now && buckets.has(key)) {
         buckets.get(key).expenses += Number(expense.amount || 0);
       }
     });
@@ -1744,9 +1742,9 @@ async function loadBusinessIntelligence() {
     const chartData = [...buckets.values()];
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("viewBox", "0 0 720 260");
+    svg.setAttribute("viewBox", "0 0 720 270");
     svg.setAttribute("role", "presentation");
-    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
     const maxValue = Math.max(
       1,
@@ -1756,9 +1754,11 @@ async function loadBusinessIntelligence() {
     const left = 48;
     const right = 704;
     const top = 18;
-    const bottom = 205;
+    const bottom = 210;
     const width = right - left;
     const height = bottom - top;
+    const groupWidth = width / Math.max(chartData.length, 1);
+    const barWidth = Math.max(3, Math.min(17, groupWidth * 0.31));
 
     for (let i = 0; i <= 4; i++) {
       const y = top + height * i / 4;
@@ -1772,52 +1772,220 @@ async function loadBusinessIntelligence() {
       svg.appendChild(grid);
     }
 
-    function makeLine(field, stroke) {
-      const line = document.createElementNS(svgNS, "polyline");
-      const points = chartData.map((point, index) => {
-        const x = left + (chartData.length <= 1
-          ? width / 2
-          : width * index / (chartData.length - 1));
+    chartData.forEach((point, index) => {
+      const center = left + groupWidth * (index + 0.5);
 
-        const y = bottom - (point[field] / maxValue) * height;
-        return `${x},${y}`;
-      }).join(" ");
+      [
+        { field: "sales", color: "#20B486", offset: -barWidth / 2 },
+        { field: "expenses", color: "#F0A36B", offset: barWidth / 2 }
+      ].forEach(series => {
+        const value = point[series.field];
+        const barHeight = value / maxValue * height;
+        const rect = document.createElementNS(svgNS, "rect");
 
-      line.setAttribute("points", points);
-      line.setAttribute("fill", "none");
-      line.setAttribute("stroke", stroke);
-      line.setAttribute("stroke-width", "3");
-      line.setAttribute("stroke-linecap", "round");
-      line.setAttribute("stroke-linejoin", "round");
-      svg.appendChild(line);
-    }
+        rect.setAttribute("x", center + series.offset - barWidth / 2);
+        rect.setAttribute("y", bottom - barHeight);
+        rect.setAttribute("width", barWidth);
+        rect.setAttribute("height", Math.max(0, barHeight));
+        rect.setAttribute("rx", "3");
+        rect.setAttribute("fill", series.color);
 
-    makeLine("sales", "#20B486");
-    makeLine("expenses", "#F0A36B");
+        const title = document.createElementNS(svgNS, "title");
+        title.textContent = `${bucketLabel(point.key)} — ${series.field}: ${money(value)}`;
+        rect.appendChild(title);
+        svg.appendChild(rect);
+      });
+    });
 
-    const firstLabel = document.createElementNS(svgNS, "text");
-    firstLabel.setAttribute("x", left);
-    firstLabel.setAttribute("y", "238");
-    firstLabel.setAttribute("fill", "#94A3B8");
-    firstLabel.setAttribute("font-size", "11");
-    firstLabel.textContent = bucketLabel(chartData[0].key);
-    svg.appendChild(firstLabel);
-
-    const lastLabel = document.createElementNS(svgNS, "text");
-    lastLabel.setAttribute("x", right);
-    lastLabel.setAttribute("y", "238");
-    lastLabel.setAttribute("text-anchor", "end");
-    lastLabel.setAttribute("fill", "#94A3B8");
-    lastLabel.setAttribute("font-size", "11");
-    lastLabel.textContent = bucketLabel(chartData[chartData.length - 1].key);
-    svg.appendChild(lastLabel);
+    [0, Math.floor((chartData.length - 1) / 2), chartData.length - 1]
+      .filter((value, index, array) => array.indexOf(value) === index)
+      .forEach(index => {
+        const label = document.createElementNS(svgNS, "text");
+        label.setAttribute("x", left + groupWidth * (index + 0.5));
+        label.setAttribute("y", "242");
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("fill", "#94A3B8");
+        label.setAttribute("font-size", "11");
+        label.textContent = bucketLabel(chartData[index].key);
+        svg.appendChild(label);
+      });
 
     chart.replaceChildren(svg);
 
     if (caption) {
-      caption.textContent = `${selectedDays === 365
-        ? "Monthly view over the last 12 months"
-        : `Daily view over the last ${selectedDays} days`} · ${sales.length} sales and ${expenses.length} expenses analysed`;
+      caption.textContent = `${monthly
+        ? "Monthly sales and expenses"
+        : `Daily sales and expenses over ${selectedDays} days`} · ${sales.length} sales and ${expenses.length} expenses analysed`;
+    }
+
+    // Financial cost breakdown: positive cost categories only.
+    const breakdown = document.getElementById("financial-breakdown-chart");
+    if (breakdown) {
+      breakdown.replaceChildren();
+
+      const totalCosts = cogs + expenseTotal;
+      const donut = document.createElement("div");
+      donut.className = "financial-donut";
+
+      if (totalCosts > 0) {
+        const cogsShare = cogs / totalCosts * 100;
+        donut.style.background =
+          `conic-gradient(#20B486 0 ${cogsShare}%, #F0A36B ${cogsShare}% 100%)`;
+      } else {
+        donut.classList.add("donut-empty");
+      }
+
+      const center = document.createElement("div");
+      center.className = "financial-donut-center";
+      center.textContent = money(totalCosts);
+      donut.appendChild(center);
+      breakdown.appendChild(donut);
+
+      [
+        { label: "Product costs (COGS)", value: cogs, color: "#20B486" },
+        { label: "Operating expenses", value: expenseTotal, color: "#F0A36B" }
+      ].forEach(item => {
+        const row = document.createElement("div");
+        row.className = "breakdown-row";
+
+        const name = document.createElement("span");
+        name.textContent = item.label;
+
+        const amount = document.createElement("strong");
+        amount.textContent = totalCosts > 0
+          ? `${(item.value / totalCosts * 100).toFixed(1)}% · ${money(item.value)}`
+          : money(item.value);
+
+        row.style.setProperty("--breakdown-color", item.color);
+        row.append(name, amount);
+        breakdown.appendChild(row);
+      });
+
+      if (totalCosts === 0) {
+        const note = document.createElement("p");
+        note.className = "chart-note";
+        note.textContent = "No recorded costs in this period.";
+        breakdown.appendChild(note);
+      }
+    }
+
+    // Percentage performance: never invent growth when the baseline is zero.
+    const growth = document.getElementById("sales-growth-chart");
+    if (growth) {
+      growth.replaceChildren();
+
+      const metrics = [
+        {
+          label: "Sales change",
+          current: revenue,
+          previous: previousRevenue
+        },
+        {
+          label: "Expense change",
+          current: expenseTotal,
+          previous: previousExpenseTotal
+        }
+      ];
+
+      metrics.forEach(metric => {
+        const card = document.createElement("div");
+        card.className = "growth-metric";
+
+        const label = document.createElement("span");
+        label.textContent = metric.label;
+
+        const value = document.createElement("strong");
+
+        if (metric.previous > 0) {
+          const change = (metric.current - metric.previous) /
+            metric.previous * 100;
+          value.textContent = `${change > 0 ? "+" : ""}${change.toFixed(1)}%`;
+          value.className = change > 0 ? "growth-up" :
+            change < 0 ? "growth-down" : "growth-neutral";
+        } else {
+          value.textContent = "N/A";
+          value.className = "growth-neutral";
+        }
+
+        const detail = document.createElement("small");
+        detail.textContent = `${money(metric.current)} vs ${money(metric.previous)}`;
+
+        card.append(label, value, detail);
+        growth.appendChild(card);
+      });
+
+      const margin = document.createElement("div");
+      margin.className = "growth-metric";
+
+      const marginLabel = document.createElement("span");
+      marginLabel.textContent = "Operating profit margin";
+
+      const marginValue = document.createElement("strong");
+      marginValue.textContent = profitMargin === null
+        ? "N/A"
+        : `${profitMargin.toFixed(1)}%`;
+      marginValue.className = profitMargin === null
+        ? "growth-neutral"
+        : profitMargin >= 0 ? "growth-up" : "growth-down";
+
+      const marginDetail = document.createElement("small");
+      marginDetail.textContent = `Operating result: ${money(operatingProfit)}`;
+
+      margin.append(marginLabel, marginValue, marginDetail);
+      growth.appendChild(margin);
+    }
+
+    // Inventory distribution: top five products by available units.
+    const inventory = document.getElementById("inventory-distribution-chart");
+    if (inventory) {
+      inventory.replaceChildren();
+
+      const stockProducts = products
+        .map(product => ({
+          name: product.product_name || "Unnamed product",
+          quantity: Math.max(0, Number(product.quantity) || 0)
+        }))
+        .sort((a, b) => b.quantity - a.quantity);
+
+      const totalStock = stockProducts.reduce(
+        (total, product) => total + product.quantity, 0
+      );
+
+      stockProducts.slice(0, 5).forEach(product => {
+        const row = document.createElement("div");
+        row.className = "stock-bar-row";
+
+        const heading = document.createElement("div");
+        heading.className = "stock-bar-heading";
+
+        const name = document.createElement("span");
+        name.textContent = product.name;
+
+        const quantity = document.createElement("strong");
+        quantity.textContent = `${product.quantity} units`;
+
+        heading.append(name, quantity);
+
+        const track = document.createElement("div");
+        track.className = "stock-bar-track";
+
+        const fill = document.createElement("div");
+        fill.className = "stock-bar-fill";
+        fill.style.width = `${totalStock > 0
+          ? product.quantity / totalStock * 100
+          : 0}%`;
+
+        track.appendChild(fill);
+        row.append(heading, track);
+        inventory.appendChild(row);
+      });
+
+      if (stockProducts.length === 0) {
+        const note = document.createElement("p");
+        note.className = "chart-note";
+        note.textContent = "No inventory products have been recorded yet.";
+        inventory.appendChild(note);
+      }
     }
 
     // Business Advisor: recommendations are based on actual records.
