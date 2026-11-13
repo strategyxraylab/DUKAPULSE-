@@ -139,6 +139,7 @@ function showWorkspaceSection(sectionId) {
 
   if (sectionId === "inventory-view") loadProducts();
   if (sectionId === "sales-view") loadSalesWorkspace();
+  if (sectionId === "sales-history-view") loadFullSalesHistory();
   if (sectionId === "expenses-view") loadExpenses();
   if (sectionId === "reports-view") loadReports();
 }
@@ -1028,6 +1029,17 @@ async function openSaleReceipt(saleId) {
           </div>
         </div>
 
+        <div class="receipt-customer" data-receipt-customer hidden>
+          <div>
+            <span>Customer</span>
+            <strong data-receipt-customer-name></strong>
+          </div>
+          <div data-receipt-customer-phone-row hidden>
+            <span>Phone</span>
+            <strong data-receipt-customer-phone></strong>
+          </div>
+        </div>
+
         <table class="receipt-items">
           <thead>
             <tr>
@@ -1077,7 +1089,7 @@ async function openSaleReceipt(saleId) {
   try {
     const { data: sale, error: saleError } = await supabaseClient
       .from("sales")
-      .select("id, total_amount, payment_method, sold_at")
+      .select("id, total_amount, payment_method, sold_at, customer_name, customer_phone")
       .eq("id", saleId)
       .eq("business_id", currentBusinessRecord.id)
       .single();
@@ -1107,6 +1119,25 @@ async function openSaleReceipt(saleId) {
     modal.querySelector("[data-receipt-payment]").textContent =
       sale.payment_method || "Not specified";
 
+    const customerName = (sale.customer_name || "").trim();
+    const customerPhone = (sale.customer_phone || "").trim();
+    const customerSection = modal.querySelector("[data-receipt-customer]");
+
+    if (customerName || customerPhone) {
+      customerSection.hidden = false;
+      modal.querySelector("[data-receipt-customer-name]").textContent =
+        customerName || "Not provided";
+
+      const phoneRow =
+        modal.querySelector("[data-receipt-customer-phone-row]");
+      phoneRow.hidden = !customerPhone;
+
+      if (customerPhone) {
+        modal.querySelector("[data-receipt-customer-phone]").textContent =
+          customerPhone;
+      }
+    }
+
     const itemsBody = modal.querySelector("[data-receipt-items]");
     itemsBody.replaceChildren();
 
@@ -1134,6 +1165,8 @@ async function openSaleReceipt(saleId) {
       "SALES RECEIPT",
       `Receipt: ${receiptNumber}`,
       `Date: ${saleDate}`,
+      ...(customerName ? [`Customer: ${customerName}`] : []),
+      ...(customerPhone ? [`Phone: ${customerPhone}`] : []),
       "",
       ...(items || []).map(item =>
         `${item.product_name || "Product"} x ${item.quantity} - ${formatKES(item.line_total)}`
@@ -1267,6 +1300,10 @@ document.getElementById("complete-sale").addEventListener("click", async () => {
   try {
     const paymentMethod =
       document.getElementById("sale-payment-method").value;
+    const customerName =
+      document.getElementById("sale-customer-name").value.trim();
+    const customerPhone =
+      document.getElementById("sale-customer-phone").value.trim();
 
     const { data, error } = await supabaseClient.rpc("record_sale", {
       p_business_id: currentBusinessRecord.id,
@@ -1274,12 +1311,16 @@ document.getElementById("complete-sale").addEventListener("click", async () => {
       p_items: saleCart.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity
-      }))
+      })),
+      p_customer_name: customerName || null,
+      p_customer_phone: customerPhone || null
     });
 
     if (error) throw error;
 
     saleCart = [];
+    document.getElementById("sale-customer-name").value = "";
+    document.getElementById("sale-customer-phone").value = "";
     renderSalesCart();
 
     showMessage(
@@ -2599,3 +2640,172 @@ document.getElementById("analytics-period")?.addEventListener(
   "change",
   loadBusinessIntelligence
 );
+
+
+// DUKAPULSE FULL SALES HISTORY
+let salesHistoryPage = 0;
+const SALES_HISTORY_PAGE_SIZE = 25;
+
+async function loadFullSalesHistory() {
+  const tableBody = document.getElementById("full-sales-history-body");
+  const countLabel = document.getElementById("history-results-count");
+  const pageLabel = document.getElementById("history-page-label");
+  const previousButton = document.getElementById("history-previous-button");
+  const nextButton = document.getElementById("history-next-button");
+
+  if (!tableBody || !currentBusinessRecord || !supabaseClient) return;
+
+  const customerSearch = document.getElementById("history-customer-search").value.trim();
+  const paymentMethod = document.getElementById("history-payment-filter").value;
+  const fromDate = document.getElementById("history-date-from").value;
+  const toDate = document.getElementById("history-date-to").value;
+
+  if (fromDate && toDate && fromDate > toDate) {
+    tableBody.textContent = "";
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 6;
+    cell.className = "table-empty";
+    cell.textContent = "The start date cannot be after the end date.";
+    row.appendChild(cell);
+    tableBody.appendChild(row);
+    countLabel.textContent = "Please correct the date range.";
+    return;
+  }
+
+  tableBody.textContent = "";
+  const loadingRow = document.createElement("tr");
+  const loadingCell = document.createElement("td");
+  loadingCell.colSpan = 6;
+  loadingCell.className = "table-empty";
+  loadingCell.textContent = "Loading sales history...";
+  loadingRow.appendChild(loadingCell);
+  tableBody.appendChild(loadingRow);
+
+  countLabel.textContent = "Loading transactions...";
+
+  const firstRecord = salesHistoryPage * SALES_HISTORY_PAGE_SIZE;
+  const lastRecord = firstRecord + SALES_HISTORY_PAGE_SIZE - 1;
+
+  let query = supabaseClient
+    .from("sales")
+    .select(
+      "id, total_amount, payment_method, sold_at, customer_name, customer_phone",
+      { count: "exact" }
+    )
+    .eq("business_id", currentBusinessRecord.id)
+    .order("sold_at", { ascending: false });
+
+  if (customerSearch) {
+    query = query.ilike("customer_name", `%${customerSearch}%`);
+  }
+
+  if (paymentMethod) {
+    query = query.eq("payment_method", paymentMethod);
+  }
+
+  if (fromDate) {
+    query = query.gte(
+      "sold_at",
+      new Date(`${fromDate}T00:00:00`).toISOString()
+    );
+  }
+
+  if (toDate) {
+    const dayAfter = new Date(`${toDate}T00:00:00`);
+    dayAfter.setDate(dayAfter.getDate() + 1);
+    query = query.lt("sold_at", dayAfter.toISOString());
+  }
+
+  const { data, error, count } = await query.range(firstRecord, lastRecord);
+
+  tableBody.textContent = "";
+
+  if (error) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 6;
+    cell.className = "table-empty";
+    cell.textContent = `Could not load sales history: ${error.message}`;
+    row.appendChild(cell);
+    tableBody.appendChild(row);
+    countLabel.textContent = "Sales history could not be loaded.";
+    return;
+  }
+
+  const totalRecords = count || 0;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / SALES_HISTORY_PAGE_SIZE));
+
+  countLabel.textContent =
+    `${totalRecords} transaction${totalRecords === 1 ? "" : "s"} found`;
+
+  pageLabel.textContent = `Page ${salesHistoryPage + 1} of ${totalPages}`;
+  previousButton.disabled = salesHistoryPage <= 0;
+  nextButton.disabled = salesHistoryPage + 1 >= totalPages;
+
+  if (!data || data.length === 0) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 6;
+    cell.className = "table-empty";
+    cell.textContent = "No transactions match these filters.";
+    row.appendChild(cell);
+    tableBody.appendChild(row);
+    return;
+  }
+
+  data.forEach(sale => {
+    const row = document.createElement("tr");
+
+    const values = [
+      new Date(sale.sold_at).toLocaleString(),
+      sale.customer_name || "Walk-in customer",
+      sale.customer_phone || "—",
+      formatKES(sale.total_amount),
+      sale.payment_method || "—"
+    ];
+
+    values.forEach(value => {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+
+    const receiptCell = document.createElement("td");
+    const receiptButton = document.createElement("button");
+    receiptButton.type = "button";
+    receiptButton.className = "history-receipt-button";
+    receiptButton.textContent = "View receipt";
+    receiptButton.addEventListener("click", () => openSaleReceipt(sale.id));
+    receiptCell.appendChild(receiptButton);
+    row.appendChild(receiptCell);
+
+    tableBody.appendChild(row);
+  });
+}
+
+document.getElementById("history-search-button").addEventListener("click", () => {
+  salesHistoryPage = 0;
+  loadFullSalesHistory();
+});
+
+document.getElementById("history-reset-button").addEventListener("click", () => {
+  document.getElementById("history-customer-search").value = "";
+  document.getElementById("history-payment-filter").value = "";
+  document.getElementById("history-date-from").value = "";
+  document.getElementById("history-date-to").value = "";
+  salesHistoryPage = 0;
+  loadFullSalesHistory();
+});
+
+document.getElementById("history-previous-button").addEventListener("click", () => {
+  if (salesHistoryPage > 0) {
+    salesHistoryPage--;
+    loadFullSalesHistory();
+  }
+});
+
+document.getElementById("history-next-button").addEventListener("click", () => {
+  salesHistoryPage++;
+  loadFullSalesHistory();
+});

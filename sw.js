@@ -4,7 +4,7 @@
   Supabase and other external services remain network-dependent.
 */
 
-const CACHE_NAME = "dukapulse-shell-v5";
+const CACHE_NAME = "dukapulse-shell-v7";
 
 const APP_FILES = [
   "index.html",

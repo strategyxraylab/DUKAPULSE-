@@ -190,6 +190,7 @@
       <button class="nav-link active" type="button" data-section="dashboard-home">Overview</button>
       <button class="nav-link" type="button" data-section="inventory-view">Inventory</button>
       <button class="nav-link" type="button" data-section="sales-view">Sales</button>
+  <button class="nav-link" type="button" data-section="sales-history-view">Sales History</button>
       <button class="nav-link" type="button" data-section="expenses-view">Expenses</button>
       <button class="nav-link" type="button" data-section="reports-view">Reports</button>
     </nav>
@@ -525,6 +526,18 @@
           </div>
 
           <div class="sales-checkout">
+            <div class="sales-customer-fields">
+              <div>
+                <label for="sale-customer-name">Customer name (optional)</label>
+                <input id="sale-customer-name" type="text"
+                       maxlength="100" placeholder="Enter customer name">
+              </div>
+              <div>
+                <label for="sale-customer-phone">Customer phone (optional)</label>
+                <input id="sale-customer-phone" type="tel"
+                       maxlength="30" placeholder="e.g. 0712345678">
+              </div>
+            </div>
             <div>
               <label for="sale-payment-method">Payment method</label>
               <select id="sale-payment-method" required>
@@ -575,6 +588,89 @@
         </div>
       </section>
 
+
+
+      <section id="sales-history-view" class="workspace-section hidden">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">TRANSACTION RECORDS</p>
+            <h2>Sales History</h2>
+            <p>Search past transactions and open their receipts.</p>
+          </div>
+        </div>
+
+        <div class="history-filter-panel">
+          <div class="history-filter-grid">
+            <div>
+              <label for="history-customer-search">Customer name</label>
+              <input id="history-customer-search" type="search"
+                placeholder="Search customer name">
+            </div>
+            <div>
+              <label for="history-payment-filter">Payment method</label>
+              <select id="history-payment-filter">
+                <option value="">All payment methods</option>
+                <option value="Cash">Cash</option>
+                <option value="M-Pesa">M-Pesa</option>
+                <option value="Card">Card</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+            </div>
+            <div>
+              <label for="history-date-from">From date</label>
+              <input id="history-date-from" type="date">
+            </div>
+            <div>
+              <label for="history-date-to">To date</label>
+              <input id="history-date-to" type="date">
+            </div>
+          </div>
+
+          <div class="history-filter-actions">
+            <button id="history-search-button" class="history-action-button" type="button">
+              Search sales
+            </button>
+            <button id="history-reset-button" class="history-reset-button" type="button">
+              Reset filters
+            </button>
+          </div>
+        </div>
+
+        <div class="history-results-heading">
+          <div>
+            <h3>All transactions</h3>
+            <p id="history-results-count">Loading sales history...</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Sale total</th>
+                <th>Payment method</th>
+                <th>Receipt</th>
+              </tr>
+            </thead>
+            <tbody id="full-sales-history-body">
+              <tr><td colspan="6" class="table-empty">Sales history will appear here.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="history-pagination">
+          <button id="history-previous-button" class="history-page-button" type="button" disabled>
+            Previous
+          </button>
+          <span id="history-page-label">Page 1</span>
+          <button id="history-next-button" class="history-page-button" type="button" disabled>
+            Next
+          </button>
+        </div>
+      </section>
 
       <section id="expenses-view" class="workspace-section hidden">
         <div class="section-heading">

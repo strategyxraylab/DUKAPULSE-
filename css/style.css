@@ -811,8 +811,28 @@ form input::placeholder {
   background: #f3f8f5;
 }
 
-.sales-checkout > div:first-child {
+.sales-checkout > div:nth-child(2) {
   width: min(100%, 230px);
+}
+
+.sales-checkout > .sales-customer-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: min(100%, 460px);
+}
+
+.sales-checkout input {
+  width: 100%;
+  min-width: 0;
+  min-height: 45px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: #26352c;
+  font: inherit;
+  font-size: 13px;
 }
 
 .sales-total {
@@ -873,8 +893,13 @@ form input::placeholder {
     flex-direction: column;
   }
 
-  .sales-checkout > div:first-child {
+  .sales-checkout > div:nth-child(2) {
     width: 100%;
+  }
+
+  .sales-checkout > .sales-customer-fields {
+    width: 100%;
+    grid-template-columns: 1fr;
   }
 
   .sales-total {
@@ -2604,20 +2629,36 @@ form input::placeholder {
 }
 
 .receipt-meta div,
-.receipt-payment {
+.receipt-payment,
+.receipt-customer div {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
+.receipt-customer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px dashed #cbd5ce;
+}
+
+.receipt-customer[hidden],
+.receipt-customer [hidden] {
+  display: none;
+}
+
 .receipt-meta span,
-.receipt-payment span {
+.receipt-payment span,
+.receipt-customer span {
   color: #718078;
   font-size: 10px;
 }
 
 .receipt-meta strong,
-.receipt-payment strong {
+.receipt-payment strong,
+.receipt-customer strong {
   color: #1b2921;
   font-size: 12px;
   overflow-wrap: anywhere;
@@ -2782,5 +2823,134 @@ form input::placeholder {
   @page {
     size: auto;
     margin: 10mm;
+  }
+}
+
+
+/* DUKAPULSE FULL SALES HISTORY */
+.history-filter-panel {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  border-radius: 16px;
+  background: var(--surface, rgba(255,255,255,.04));
+}
+
+.history-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.history-filter-grid > div {
+  min-width: 0;
+}
+
+.history-filter-grid label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.history-filter-grid input,
+.history-filter-grid select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--border, rgba(255,255,255,.18));
+  border-radius: 9px;
+  background: var(--card, #fff);
+  color: var(--text);
+  font: inherit;
+}
+
+.history-filter-actions,
+.history-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.history-action-button,
+.history-reset-button,
+.history-page-button,
+.history-receipt-button {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid var(--border, rgba(255,255,255,.18));
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.history-action-button {
+  background: var(--accent, #16794b);
+  color: #fff;
+}
+
+.history-reset-button,
+.history-page-button {
+  background: transparent;
+  color: var(--text);
+}
+
+.history-receipt-button {
+  background: transparent;
+  color: var(--accent, #16794b);
+}
+
+.history-page-button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.history-results-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 22px 0 12px;
+}
+
+.history-results-heading h3 {
+  margin: 0 0 5px;
+}
+
+.history-results-heading p {
+  margin: 0;
+  opacity: .7;
+  font-size: .9rem;
+}
+
+.history-pagination {
+  justify-content: flex-end;
+}
+
+.history-pagination span {
+  font-size: .9rem;
+  opacity: .8;
+}
+
+@media (max-width: 760px) {
+  .history-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .history-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .history-filter-panel {
+    padding: 14px;
+  }
+
+  .history-filter-actions > button {
+    flex: 1;
   }
 }
