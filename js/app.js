@@ -2003,14 +2003,50 @@ async function loadBusinessIntelligence() {
       });
     });
 
-    if (revenue > 0) {
+    // Never present incomplete historical costs as a reliable profit figure.
+    const missingCostItems = currentItems.filter(item =>
+      item.unit_cost_price === null ||
+      item.unit_cost_price === undefined ||
+      String(item.unit_cost_price).trim() === ""
+    );
+
+    const hasCompleteCostData =
+      currentItems.length > 0 && missingCostItems.length === 0;
+
+    if (revenue > 0 && !hasCompleteCostData) {
       insights.push({
-        type: operatingProfit >= 0 ? "positive" : "warning",
-        title: operatingProfit >= 0
-          ? "Your business is operating profitably"
-          : "Operating profit is below zero",
-        message: `For this period, revenue was ${money(revenue)}, product costs were ${money(cogs)}, and operating expenses were ${money(expenseTotal)}. Operating profit is ${money(operatingProfit)}${profitMargin === null ? "" : ` (${profitMargin.toFixed(1)}% margin)`}.`
+        type: "warning",
+        title: "Profit calculation needs complete product costs",
+        message: currentItems.length === 0
+          ? `Revenue is ${money(revenue)}, but no sale-item cost records were found for this period. Add or verify product costs before relying on profit figures.`
+          : `${missingCostItems.length} of ${currentItems.length} sold product records have no recorded unit cost. Current revenue is ${money(revenue)}. Update the affected product costs and verify historical sale records before relying on profit figures.`
       });
+    } else if (revenue > 0) {
+      if (operatingProfit < 0 && grossProfit < 0) {
+        insights.push({
+          type: "warning",
+          title: "Product costs are exceeding sales",
+          message: `Recorded product costs are ${money(cogs)} against revenue of ${money(revenue)}. This creates a gross loss of ${money(Math.abs(grossProfit))} before operating expenses. Review purchase costs, selling prices and discounts for the products sold.`
+        });
+      } else if (operatingProfit < 0) {
+        insights.push({
+          type: "warning",
+          title: "Operating expenses are reducing your profit",
+          message: `Sales cover product costs and leave ${money(grossProfit)} gross profit, but operating expenses are ${money(expenseTotal)}. The resulting operating loss is ${money(Math.abs(operatingProfit))}. Review recurring expenses and spending categories.`
+        });
+      } else if (profitMargin !== null && profitMargin < 10) {
+        insights.push({
+          type: "warning",
+          title: "Your operating profit margin is tight",
+          message: `Operating profit is ${money(operatingProfit)}, equal to a ${profitMargin.toFixed(1)}% margin on ${money(revenue)} revenue. Review product pricing, costs and operating expenses to understand where the remaining margin goes.`
+        });
+      } else {
+        insights.push({
+          type: "positive",
+          title: "Your business is operating profitably",
+          message: `Revenue is ${money(revenue)}, product costs are ${money(cogs)}, and operating expenses are ${money(expenseTotal)}. Operating profit is ${money(operatingProfit)} (${profitMargin.toFixed(1)}% margin). Continue monitoring costs and margins.`
+        });
+      }
     } else {
       insights.push({
         type: "neutral",
@@ -2054,6 +2090,62 @@ async function loadBusinessIntelligence() {
       }
     }
 
+    // Compare spending by category across equal periods.
+    const currentByCategory = new Map();
+    const previousByCategory = new Map();
+
+    currentExpenses.forEach(expense => {
+      const category = expense.category || "Other";
+      currentByCategory.set(
+        category,
+        (currentByCategory.get(category) || 0) + Number(expense.amount || 0)
+      );
+    });
+
+    previousExpenses.forEach(expense => {
+      const category = expense.category || "Other";
+      previousByCategory.set(
+        category,
+        (previousByCategory.get(category) || 0) + Number(expense.amount || 0)
+      );
+    });
+
+    const categoryIncreases = [...currentByCategory.entries()]
+      .map(([category, amount]) => {
+        const previous = previousByCategory.get(category) || 0;
+        return {
+          category,
+          amount,
+          previous,
+          increase: amount - previous,
+          isNew: previous === 0
+        };
+      })
+      .filter(item =>
+        item.amount >= 500 &&
+        (
+          item.isNew ||
+          (item.increase >= 500 && item.amount > item.previous * 1.2)
+        )
+      )
+      .sort((a, b) => b.increase - a.increase);
+
+    categoryIncreases.slice(0, 2).forEach(item => {
+      const change = item.previous > 0
+        ? `${(item.increase / item.previous * 100).toFixed(1)}%`
+        : "new category";
+
+      insights.push({
+        type: "warning",
+        title: item.isNew
+          ? `${item.category}: new spending category`
+          : `${item.category}: spending has increased`,
+        message: item.isNew
+          ? `${money(item.amount)} was recorded in this category during the current period, with no spending recorded in the previous comparison period. Review the transactions to confirm they are expected.`
+          : `This category recorded ${money(item.amount)} compared with ${money(item.previous)} in the previous ${selectedDays}-day period. That is an increase of ${change} (${money(item.increase)}). Check the recent transactions to confirm whether the increase was expected.`
+      });
+    });
+
     // Best sellers are ranked by actual units sold.
     const productSales = new Map();
 
@@ -2089,7 +2181,7 @@ async function loadBusinessIntelligence() {
 
     advisor.replaceChildren();
 
-    insights.slice(0, 6).forEach(insight => {
+    insights.slice(0, 8).forEach(insight => {
       const card = document.createElement("article");
       card.className = `advisor-card advisor-${insight.type}`;
 
