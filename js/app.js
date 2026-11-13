@@ -978,6 +978,193 @@ document.getElementById("add-sale-item").addEventListener("click", () => {
   renderSalesCart();
 });
 
+
+/* DUKAPULSE SMART RECEIPTS V1 */
+
+function closeSaleReceipt() {
+  document.querySelector(".receipt-modal")?.remove();
+}
+
+async function openSaleReceipt(saleId) {
+  if (!currentBusinessRecord || !supabaseClient) return;
+
+  closeSaleReceipt();
+
+  const modal = document.createElement("div");
+  modal.className = "receipt-modal";
+  modal.innerHTML = `
+    <div class="receipt-dialog" role="dialog" aria-modal="true"
+         aria-label="Sales receipt">
+      <div class="receipt-actions">
+        <button type="button" class="receipt-close" data-receipt-close>Close</button>
+        <button type="button" class="receipt-whatsapp" data-receipt-whatsapp disabled>
+          Share on WhatsApp
+        </button>
+        <button type="button" class="receipt-print" data-receipt-print disabled>
+          Print / Save PDF
+        </button>
+      </div>
+
+      <p class="receipt-loading" data-receipt-loading>Loading saved receipt...</p>
+      <p class="receipt-error" data-receipt-error hidden></p>
+
+      <article class="receipt-paper" data-receipt-paper hidden>
+        <div class="receipt-brand">
+          <span class="receipt-mark">DP</span>
+          <span>SALES RECEIPT</span>
+        </div>
+
+        <h2 data-receipt-business></h2>
+        <p class="receipt-thanks">A record of your purchase</p>
+
+        <div class="receipt-meta">
+          <div>
+            <span>Receipt reference</span>
+            <strong data-receipt-number></strong>
+          </div>
+          <div>
+            <span>Date and time</span>
+            <strong data-receipt-date></strong>
+          </div>
+        </div>
+
+        <table class="receipt-items">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody data-receipt-items></tbody>
+        </table>
+
+        <div class="receipt-total">
+          <span>Sale total</span>
+          <strong data-receipt-total></strong>
+        </div>
+
+        <div class="receipt-payment">
+          <span>Payment method</span>
+          <strong data-receipt-payment></strong>
+        </div>
+
+        <p class="receipt-footer">
+          Thank you for shopping with us.
+        </p>
+        <p class="receipt-powered">Powered by DUKAPULSE</p>
+      </article>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeButton = modal.querySelector("[data-receipt-close]");
+  const printButton = modal.querySelector("[data-receipt-print]");
+  const shareButton = modal.querySelector("[data-receipt-whatsapp]");
+
+  closeButton.addEventListener("click", closeSaleReceipt);
+
+  modal.addEventListener("click", event => {
+    if (event.target === modal) closeSaleReceipt();
+  });
+
+  printButton.addEventListener("click", () => {
+    window.print();
+  });
+
+  try {
+    const { data: sale, error: saleError } = await supabaseClient
+      .from("sales")
+      .select("id, total_amount, payment_method, sold_at")
+      .eq("id", saleId)
+      .eq("business_id", currentBusinessRecord.id)
+      .single();
+
+    if (saleError) throw saleError;
+
+    const { data: items, error: itemsError } = await supabaseClient
+      .from("sale_items")
+      .select("id, sale_id, product_name, quantity, unit_selling_price, line_total")
+      .eq("sale_id", sale.id)
+      .order("id", { ascending: true });
+
+    if (itemsError) throw itemsError;
+
+    const receiptNumber = String(sale.id).slice(0, 8).toUpperCase();
+    const businessName = currentBusinessRecord.business_name || "Business";
+    const saleDate = new Date(sale.sold_at).toLocaleString("en-KE", {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
+
+    modal.querySelector("[data-receipt-business]").textContent = businessName;
+    modal.querySelector("[data-receipt-number]").textContent = receiptNumber;
+    modal.querySelector("[data-receipt-date]").textContent = saleDate;
+    modal.querySelector("[data-receipt-total]").textContent =
+      formatKES(sale.total_amount);
+    modal.querySelector("[data-receipt-payment]").textContent =
+      sale.payment_method || "Not specified";
+
+    const itemsBody = modal.querySelector("[data-receipt-items]");
+    itemsBody.replaceChildren();
+
+    (items || []).forEach(item => {
+      const row = document.createElement("tr");
+
+      const name = document.createElement("td");
+      name.textContent = item.product_name || "Product";
+
+      const quantity = document.createElement("td");
+      quantity.textContent = String(item.quantity);
+
+      const price = document.createElement("td");
+      price.textContent = formatKES(item.unit_selling_price);
+
+      const amount = document.createElement("td");
+      amount.textContent = formatKES(item.line_total);
+
+      row.append(name, quantity, price, amount);
+      itemsBody.appendChild(row);
+    });
+
+    const receiptText = [
+      businessName,
+      "SALES RECEIPT",
+      `Receipt: ${receiptNumber}`,
+      `Date: ${saleDate}`,
+      "",
+      ...(items || []).map(item =>
+        `${item.product_name || "Product"} x ${item.quantity} - ${formatKES(item.line_total)}`
+      ),
+      "",
+      `Total: ${formatKES(sale.total_amount)}`,
+      `Payment: ${sale.payment_method || "Not specified"}`,
+      "",
+      "Thank you for shopping with us."
+    ].join("\n");
+
+    shareButton.disabled = false;
+    shareButton.addEventListener("click", () => {
+      const url = "https://wa.me/?text=" + encodeURIComponent(receiptText);
+      window.open(url, "_blank", "noopener,noreferrer");
+    });
+
+    printButton.disabled = false;
+    modal.querySelector("[data-receipt-loading]").hidden = true;
+    modal.querySelector("[data-receipt-paper]").hidden = false;
+
+  } catch (error) {
+    modal.querySelector("[data-receipt-loading]").hidden = true;
+    const errorElement = modal.querySelector("[data-receipt-error]");
+    errorElement.textContent =
+      error.message || "Could not load this receipt.";
+    errorElement.hidden = false;
+    console.error("Receipt loading failed:", error);
+  }
+}
+
 async function loadSalesHistory() {
   const body = document.getElementById("sales-history-body");
   const count = document.getElementById("sales-history-count");
@@ -1040,6 +1227,15 @@ async function loadSalesHistory() {
     addTableCell(row, date);
     addTableCell(row, formatKES(sale.total_amount));
     addTableCell(row, sale.payment_method);
+
+    const receiptCell = document.createElement("td");
+    const receiptButton = document.createElement("button");
+    receiptButton.type = "button";
+    receiptButton.className = "sales-receipt-button";
+    receiptButton.textContent = "View receipt";
+    receiptButton.addEventListener("click", () => openSaleReceipt(sale.id));
+    receiptCell.appendChild(receiptButton);
+    row.appendChild(receiptCell);
 
     addTapToRevealDelete(
       row,
