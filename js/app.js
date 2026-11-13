@@ -1523,3 +1523,438 @@ async function loadDashboardAnalytics() {
     }
   }
 }
+
+/* ==========================================
+   DUKAPULSE BUSINESS INTELLIGENCE
+   Performance charts + rule-based advisor
+========================================== */
+
+async function loadBusinessIntelligence() {
+  if (!currentBusinessRecord || !currentUser || !supabaseClient) return;
+
+  const chart = document.getElementById("dashboard-performance-chart");
+  const advisor = document.getElementById("business-advisor-list");
+  const caption = document.getElementById("analytics-chart-caption");
+  const periodControl = document.getElementById("analytics-period");
+
+  if (!chart || !advisor) return;
+
+  chart.textContent = "Analysing business records...";
+  advisor.textContent = "Reviewing your business activity...";
+
+  const businessId = currentBusinessRecord.id;
+  const now = new Date();
+  const selectedDays = Number(periodControl?.value || 30);
+  const historyStart = new Date(now);
+  historyStart.setDate(historyStart.getDate() - 730);
+  historyStart.setHours(0, 0, 0, 0);
+
+  const localKey = date => [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+
+  const money = value => formatKES(value);
+  const sum = (items, field) =>
+    items.reduce((total, item) => total + Number(item[field] || 0), 0);
+
+  // Fetch every page instead of silently stopping at Supabase's row limit.
+  async function fetchAllRows(makeQuery) {
+    const rows = [];
+    let offset = 0;
+    const pageSize = 1000;
+
+    while (true) {
+      const { data, error } = await makeQuery()
+        .range(offset, offset + pageSize - 1);
+
+      if (error) throw error;
+
+      const page = data || [];
+      rows.push(...page);
+
+      if (page.length < pageSize) break;
+      offset += pageSize;
+    }
+
+    return rows;
+  }
+
+  try {
+    const startISO = historyStart.toISOString();
+
+    const [sales, expenses, products] = await Promise.all([
+      fetchAllRows(() => supabaseClient
+        .from("sales")
+        .select("id, total_amount, sold_at")
+        .eq("business_id", businessId)
+        .gte("sold_at", startISO)
+        .order("sold_at", { ascending: true })),
+
+      fetchAllRows(() => supabaseClient
+        .from("expenses")
+        .select("category, amount, spent_at")
+        .eq("business_id", businessId)
+        .gte("spent_at", startISO)
+        .order("spent_at", { ascending: true })),
+
+      fetchAllRows(() => supabaseClient
+        .from("products")
+        .select("id, product_name, category, quantity, low_stock_threshold")
+        .eq("business_id", businessId)
+        .order("product_name", { ascending: true }))
+    ]);
+
+    // Retrieve sale items in manageable batches.
+    const saleItems = [];
+    const saleIds = sales.map(sale => sale.id);
+
+    for (let i = 0; i < saleIds.length; i += 100) {
+      const batchIds = saleIds.slice(i, i + 100);
+
+      const batch = await fetchAllRows(() => supabaseClient
+        .from("sale_items")
+        .select("id, sale_id, product_id, product_name, quantity, unit_selling_price, unit_cost_price, line_total")
+        .in("sale_id", batchIds)
+        .order("id", { ascending: true }));
+
+      saleItems.push(...batch);
+    }
+
+    const operatingExpenses = expenses.filter(
+      item => item.category !== "Stock Purchase"
+    );
+
+    const saleById = new Map(sales.map(sale => [sale.id, sale]));
+
+    const itemCost = item =>
+      Number(item.quantity || 0) * Number(item.unit_cost_price || 0);
+
+    const itemRevenue = item =>
+      Number(item.line_total ?? (
+        Number(item.quantity || 0) *
+        Number(item.unit_selling_price || 0)
+      ));
+
+    // Current and previous periods use equal calendar-day windows.
+    const periodStart = new Date(now);
+    periodStart.setDate(periodStart.getDate() - selectedDays + 1);
+    periodStart.setHours(0, 0, 0, 0);
+
+    const previousStart = new Date(periodStart);
+    previousStart.setDate(previousStart.getDate() - selectedDays);
+
+    const currentSales = sales.filter(
+      sale => new Date(sale.sold_at) >= periodStart
+    );
+
+    const previousSales = sales.filter(sale => {
+      const date = new Date(sale.sold_at);
+      return date >= previousStart && date < periodStart;
+    });
+
+    const currentExpenses = operatingExpenses.filter(
+      expense => new Date(expense.spent_at) >= periodStart
+    );
+
+    const previousExpenses = operatingExpenses.filter(expense => {
+      const date = new Date(expense.spent_at);
+      return date >= previousStart && date < periodStart;
+    });
+
+    const currentIds = new Set(currentSales.map(sale => sale.id));
+    const previousIds = new Set(previousSales.map(sale => sale.id));
+
+    const currentItems = saleItems.filter(item => currentIds.has(item.sale_id));
+    const previousItems = saleItems.filter(item => previousIds.has(item.sale_id));
+
+    const revenue = sum(currentSales, "total_amount");
+    const previousRevenue = sum(previousSales, "total_amount");
+    const expenseTotal = sum(currentExpenses, "amount");
+    const previousExpenseTotal = sum(previousExpenses, "amount");
+
+    const cogs = currentItems.reduce((total, item) => total + itemCost(item), 0);
+    const previousCogs = previousItems.reduce(
+      (total, item) => total + itemCost(item), 0
+    );
+
+    const grossProfit = revenue - cogs;
+    const operatingProfit = grossProfit - expenseTotal;
+    const profitMargin = revenue > 0 ? operatingProfit / revenue * 100 : null;
+
+    const previousProfit =
+      previousRevenue - previousCogs - previousExpenseTotal;
+
+    // Build the performance chart.
+    // Keep chart dates aligned with the advisor's current period.
+    const chartStart = new Date(periodStart);
+
+    const monthly = selectedDays === 365;
+    const buckets = new Map();
+
+    function bucketKey(date) {
+      if (monthly) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      }
+      return localKey(date);
+    }
+
+    function bucketLabel(key) {
+      const parts = key.split("-").map(Number);
+      const date = monthly
+        ? new Date(parts[0], parts[1] - 1, 1)
+        : new Date(parts[0], parts[1] - 1, parts[2]);
+
+      return date.toLocaleDateString("en-KE", monthly
+        ? { month: "short", year: "2-digit" }
+        : { day: "numeric", month: "short" }
+      );
+    }
+
+    const bucketCount = monthly ? 12 : selectedDays;
+
+    for (let i = 0; i < bucketCount; i++) {
+      const date = monthly
+        ? new Date(now.getFullYear(), now.getMonth() - 11 + i, 1)
+        : new Date(chartStart);
+
+      if (!monthly) {
+        date.setDate(date.getDate() + i);
+      }
+
+      const key = bucketKey(date);
+      buckets.set(key, { key, sales: 0, expenses: 0 });
+    }
+
+    sales.forEach(sale => {
+      const key = bucketKey(new Date(sale.sold_at));
+      if (buckets.has(key)) {
+        buckets.get(key).sales += Number(sale.total_amount || 0);
+      }
+    });
+
+    operatingExpenses.forEach(expense => {
+      const key = bucketKey(new Date(expense.spent_at));
+      if (buckets.has(key)) {
+        buckets.get(key).expenses += Number(expense.amount || 0);
+      }
+    });
+
+    const chartData = [...buckets.values()];
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 720 260");
+    svg.setAttribute("role", "presentation");
+    svg.setAttribute("preserveAspectRatio", "none");
+
+    const maxValue = Math.max(
+      1,
+      ...chartData.flatMap(point => [point.sales, point.expenses])
+    );
+
+    const left = 48;
+    const right = 704;
+    const top = 18;
+    const bottom = 205;
+    const width = right - left;
+    const height = bottom - top;
+
+    for (let i = 0; i <= 4; i++) {
+      const y = top + height * i / 4;
+      const grid = document.createElementNS(svgNS, "line");
+      grid.setAttribute("x1", left);
+      grid.setAttribute("x2", right);
+      grid.setAttribute("y1", y);
+      grid.setAttribute("y2", y);
+      grid.setAttribute("stroke", "#263746");
+      grid.setAttribute("stroke-dasharray", "4 5");
+      svg.appendChild(grid);
+    }
+
+    function makeLine(field, stroke) {
+      const line = document.createElementNS(svgNS, "polyline");
+      const points = chartData.map((point, index) => {
+        const x = left + (chartData.length <= 1
+          ? width / 2
+          : width * index / (chartData.length - 1));
+
+        const y = bottom - (point[field] / maxValue) * height;
+        return `${x},${y}`;
+      }).join(" ");
+
+      line.setAttribute("points", points);
+      line.setAttribute("fill", "none");
+      line.setAttribute("stroke", stroke);
+      line.setAttribute("stroke-width", "3");
+      line.setAttribute("stroke-linecap", "round");
+      line.setAttribute("stroke-linejoin", "round");
+      svg.appendChild(line);
+    }
+
+    makeLine("sales", "#20B486");
+    makeLine("expenses", "#F0A36B");
+
+    const firstLabel = document.createElementNS(svgNS, "text");
+    firstLabel.setAttribute("x", left);
+    firstLabel.setAttribute("y", "238");
+    firstLabel.setAttribute("fill", "#94A3B8");
+    firstLabel.setAttribute("font-size", "11");
+    firstLabel.textContent = bucketLabel(chartData[0].key);
+    svg.appendChild(firstLabel);
+
+    const lastLabel = document.createElementNS(svgNS, "text");
+    lastLabel.setAttribute("x", right);
+    lastLabel.setAttribute("y", "238");
+    lastLabel.setAttribute("text-anchor", "end");
+    lastLabel.setAttribute("fill", "#94A3B8");
+    lastLabel.setAttribute("font-size", "11");
+    lastLabel.textContent = bucketLabel(chartData[chartData.length - 1].key);
+    svg.appendChild(lastLabel);
+
+    chart.replaceChildren(svg);
+
+    if (caption) {
+      caption.textContent = `${selectedDays === 365
+        ? "Monthly view over the last 12 months"
+        : `Daily view over the last ${selectedDays} days`} · ${sales.length} sales and ${expenses.length} expenses analysed`;
+    }
+
+    // Business Advisor: recommendations are based on actual records.
+    const insights = [];
+
+    const lowStock = products.filter(product =>
+      Number(product.quantity) <= Number(product.low_stock_threshold)
+    );
+
+    lowStock.slice(0, 3).forEach(product => {
+      insights.push({
+        type: "warning",
+        title: "Stock needs attention",
+        message: `${product.product_name} has ${product.quantity} units remaining. Your alert threshold is ${product.low_stock_threshold}. Consider reviewing its replenishment.`
+      });
+    });
+
+    if (revenue > 0) {
+      insights.push({
+        type: operatingProfit >= 0 ? "positive" : "warning",
+        title: operatingProfit >= 0
+          ? "Your business is operating profitably"
+          : "Operating profit is below zero",
+        message: `For this period, revenue was ${money(revenue)}, product costs were ${money(cogs)}, and operating expenses were ${money(expenseTotal)}. Operating profit is ${money(operatingProfit)}${profitMargin === null ? "" : ` (${profitMargin.toFixed(1)}% margin)`}.`
+      });
+    } else {
+      insights.push({
+        type: "neutral",
+        title: "No sales recorded in this period",
+        message: "There are no recorded sales in the selected period. Once sales are recorded, DUKAPULSE can analyse revenue, product costs and operating profit."
+      });
+    }
+
+    if (previousRevenue > 0) {
+      const change = ((revenue - previousRevenue) / previousRevenue) * 100;
+
+      insights.push({
+        type: change >= 0 ? "positive" : "warning",
+        title: change >= 0 ? "Sales are up" : "Sales have declined",
+        message: `Sales changed by ${Math.abs(change).toFixed(1)}% compared with the previous ${selectedDays}-day period. Current revenue: ${money(revenue)}; previous revenue: ${money(previousRevenue)}.`
+      });
+    } else if (revenue > 0) {
+      insights.push({
+        type: "neutral",
+        title: "Sales comparison is not available yet",
+        message: "There are no sales in the previous comparison period, so a percentage growth figure would be misleading."
+      });
+    }
+
+    if (previousExpenseTotal > 0) {
+      const expenseChange =
+        ((expenseTotal - previousExpenseTotal) / previousExpenseTotal) * 100;
+
+      if (expenseChange > 10) {
+        insights.push({
+          type: "warning",
+          title: "Operating expenses have increased",
+          message: `Operating expenses are ${expenseChange.toFixed(1)}% higher than the previous period (${money(expenseTotal)} compared with ${money(previousExpenseTotal)}). Review the categories driving the increase.`
+        });
+      } else if (expenseChange < -10) {
+        insights.push({
+          type: "positive",
+          title: "Operating expenses have decreased",
+          message: `Operating expenses are down ${Math.abs(expenseChange).toFixed(1)}% compared with the previous period.`
+        });
+      }
+    }
+
+    // Best sellers are ranked by actual units sold.
+    const productSales = new Map();
+
+    currentItems.forEach(item => {
+      const key = item.product_id || item.product_name || "unknown";
+      const existing = productSales.get(key) || {
+        name: item.product_name || "Unnamed product",
+        quantity: 0
+      };
+
+      existing.quantity += Number(item.quantity || 0);
+      productSales.set(key, existing);
+    });
+
+    const bestSeller = [...productSales.values()]
+      .sort((a, b) => b.quantity - a.quantity)[0];
+
+    if (bestSeller) {
+      insights.push({
+        type: "positive",
+        title: "Your best-selling product",
+        message: `${bestSeller.name} recorded ${bestSeller.quantity} units sold during the selected period. Consider monitoring its stock availability.`
+      });
+    }
+
+    if (insights.length === 0) {
+      insights.push({
+        type: "neutral",
+        title: "More business activity is needed",
+        message: "Record sales, expenses and products to unlock useful business recommendations."
+      });
+    }
+
+    advisor.replaceChildren();
+
+    insights.slice(0, 6).forEach(insight => {
+      const card = document.createElement("article");
+      card.className = `advisor-card advisor-${insight.type}`;
+
+      const heading = document.createElement("strong");
+      heading.textContent = insight.title;
+
+      const message = document.createElement("p");
+      message.textContent = insight.message;
+
+      card.append(heading, message);
+      advisor.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("Business Intelligence failed:", error);
+
+    chart.textContent = "Business performance could not be loaded. Please try again.";
+    advisor.textContent = "Business insights could not be generated. Please try again.";
+
+    if (caption) caption.textContent = "Analytics are temporarily unavailable.";
+  }
+}
+
+// Extend the existing dashboard refresh without replacing its calculations.
+const loadDashboardAnalyticsOriginal = loadDashboardAnalytics;
+
+loadDashboardAnalytics = async function () {
+  await loadDashboardAnalyticsOriginal();
+  await loadBusinessIntelligence();
+};
+
+// Recalculate the chart and recommendations when the period changes.
+document.getElementById("analytics-period")?.addEventListener(
+  "change",
+  loadBusinessIntelligence
+);

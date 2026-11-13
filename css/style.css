@@ -1270,3 +1270,228 @@ form input::placeholder {
 .record-delete-visible {
   background: #fffafa;
 }
+
+/* ==========================================
+   DUKAPULSE MIDNIGHT + EMERALD INTELLIGENCE
+========================================== */
+
+.analytics-section,
+.advisor-section {
+  position: relative;
+  margin-top: 26px;
+  padding: 25px;
+  overflow: hidden;
+  color: #F8FAFC;
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(32,180,134,.15), transparent 42%),
+    linear-gradient(145deg, #111D28, #0B1118 72%);
+  border: 1px solid rgba(32,180,134,.19);
+  border-radius: 22px;
+  box-shadow: 0 16px 40px rgba(11,17,24,.12);
+}
+
+.analytics-heading,
+.advisor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.analytics-heading h2,
+.advisor-heading h2 {
+  margin: 8px 0;
+  color: #F8FAFC;
+  font-size: clamp(19px, 4vw, 25px);
+  letter-spacing: -.5px;
+}
+
+.analytics-heading p,
+.advisor-heading p {
+  margin: 0;
+  color: #94A3B8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.analytics-section .eyebrow,
+.advisor-section .eyebrow {
+  color: #20B486;
+  letter-spacing: 1.7px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.analytics-period-control {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 135px;
+  color: #94A3B8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.analytics-period-control select {
+  width: 100%;
+  padding: 11px 12px;
+  color: #F8FAFC;
+  background: #172532;
+  border: 1px solid rgba(148,163,184,.23);
+  border-radius: 10px;
+  outline: none;
+}
+
+.analytics-period-control select:focus {
+  border-color: #20B486;
+}
+
+.analytics-period-control option {
+  color: #F8FAFC;
+  background: #111D28;
+}
+
+.analytics-chart-panel {
+  padding: 21px;
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(148,163,184,.13);
+  border-radius: 16px;
+}
+
+.analytics-chart-heading h3 {
+  margin: 0 0 6px;
+  color: #F8FAFC;
+  font-size: 15px;
+}
+
+.analytics-chart-heading p {
+  margin: 0;
+  color: #94A3B8;
+  font-size: 11px;
+}
+
+.analytics-chart {
+  min-height: 210px;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.analytics-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  overflow: visible;
+}
+
+.analytics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 14px;
+  color: #CBD5E1;
+  font-size: 11px;
+}
+
+.analytics-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analytics-legend i {
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.legend-sales {
+  background: #20B486;
+  box-shadow: 0 0 10px rgba(32,180,134,.5);
+}
+
+.legend-expenses {
+  background: #F0A36B;
+}
+
+.advisor-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.advisor-card {
+  min-width: 0;
+  padding: 17px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(148,163,184,.14);
+  border-radius: 14px;
+}
+
+.advisor-card strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #F8FAFC;
+  font-size: 13px;
+}
+
+.advisor-card p {
+  margin: 0;
+  color: #A9B7C7;
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.advisor-card.advisor-positive {
+  border-left: 3px solid #20B486;
+}
+
+.advisor-card.advisor-warning {
+  border-left: 3px solid #F0A36B;
+}
+
+.advisor-card.advisor-neutral {
+  border-left: 3px solid #64748B;
+}
+
+.analytics-section .overview-empty,
+.advisor-section .overview-empty {
+  color: #94A3B8;
+}
+
+@media (max-width: 600px) {
+  .analytics-section,
+  .advisor-section {
+    padding: 17px;
+    border-radius: 17px;
+  }
+
+  .analytics-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .analytics-period-control {
+    max-width: 100%;
+  }
+
+  .analytics-chart-panel {
+    padding: 14px;
+  }
+
+  .analytics-chart {
+    min-height: 175px;
+  }
+
+  .advisor-list {
+    grid-template-columns: 1fr;
+  }
+}

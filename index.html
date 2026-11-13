@@ -196,6 +196,62 @@
           </article>
         </div>
 
+        <!-- DUKAPULSE BUSINESS PERFORMANCE -->
+        <section class="analytics-section">
+          <div class="analytics-heading">
+            <div>
+              <span class="eyebrow green">BUSINESS INTELLIGENCE</span>
+              <h2>Business Performance</h2>
+              <p>Understand how your business is performing over time.</p>
+            </div>
+
+            <label class="analytics-period-control" for="analytics-period">
+              <span>Period</span>
+              <select id="analytics-period">
+                <option value="7">Last 7 days</option>
+                <option value="30" selected>Last 30 days</option>
+                <option value="365">Last 12 months</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="analytics-chart-panel">
+            <div class="analytics-chart-heading">
+              <div>
+                <h3>Sales and expenses trend</h3>
+                <p id="analytics-chart-caption">Your business activity will appear here.</p>
+              </div>
+            </div>
+
+            <div id="dashboard-performance-chart"
+                 class="analytics-chart"
+                 role="img"
+                 aria-label="Business sales and expenses chart">
+              <p class="overview-empty">Performance chart will appear when analytics are loaded.</p>
+            </div>
+
+            <div class="analytics-legend">
+              <span><i class="legend-sales"></i> Sales</span>
+              <span><i class="legend-expenses"></i> Operating expenses</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- DUKAPULSE BUSINESS ADVISOR -->
+        <section class="advisor-section">
+          <div class="advisor-heading">
+            <div>
+              <span class="eyebrow green">INTELLIGENT BUSINESS INSIGHTS</span>
+              <h2>DUKAPULSE BUSINESS ADVISOR</h2>
+              <p>Practical recommendations based on your recorded business activity.</p>
+            </div>
+          </div>
+
+          <div id="business-advisor-list" class="advisor-list" aria-live="polite">
+            <p class="overview-empty">Your business insights will appear here when your data has been analysed.</p>
+          </div>
+        </section>
+
         <div class="overview-panels">
           <section class="overview-panel">
             <div class="section-heading">
