@@ -14,6 +14,41 @@
 </head>
 <body>
 
+  <!-- DUKAPULSE CINEMATIC LAUNCH SCREEN -->
+  <div id="dukapulse-launch" class="launch-screen"
+       role="status" aria-label="Opening DUKAPULSE">
+    <div class="launch-ambient launch-ambient-one"></div>
+    <div class="launch-ambient launch-ambient-two"></div>
+
+    <div class="launch-particles" aria-hidden="true">
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="launch-content">
+      <div class="launch-orbit">
+        <div class="launch-orbit-ring"></div>
+        <div class="launch-orbit-ring launch-orbit-ring-two"></div>
+        <div class="launch-logo">D</div>
+        <span class="launch-orbit-dot"></span>
+      </div>
+
+      <div class="launch-brand">DUKA<span>PULSE</span></div>
+      <div class="launch-tagline">YOUR BUSINESS. YOUR CONTROL.</div>
+
+      <div class="launch-loader">
+        <div class="launch-loader-track">
+          <div class="launch-loader-fill"></div>
+        </div>
+        <span>PREPARING YOUR WORKSPACE</span>
+      </div>
+    </div>
+
+    <div class="launch-bottom">SMARTER BUSINESS STARTS HERE</div>
+  </div>
+
+
   <main class="auth-layout">
 
     <section class="brand-panel">
@@ -732,6 +767,7 @@
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/launch.js"></script>
   <script src="js/app.js"></script>
   <script src="js/pwa.js"></script>
 </body>

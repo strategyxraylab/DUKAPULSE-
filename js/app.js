@@ -29,6 +29,7 @@ function showAuthScreen(viewName = "login") {
   document.querySelector(".auth-layout").classList.remove("hidden");
   document.getElementById("dashboard-view").classList.add("hidden");
   showView(viewName);
+  window.finishDukaPulseLaunch?.();
 }
 
 let businessLoadUserId = null;
@@ -97,6 +98,7 @@ function showDashboard(user) {
 
   authLayout.classList.add("hidden");
   dashboard.classList.remove("hidden");
+  window.finishDukaPulseLaunch?.();
 
   currentUser = user;
 

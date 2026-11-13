@@ -1780,3 +1780,251 @@ form input::placeholder {
   opacity: .6;
   cursor: wait;
 }
+
+
+/* =========================================
+   DUKAPULSE CINEMATIC APP LAUNCH EXPERIENCE
+========================================= */
+
+.launch-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  color: #f8fafc;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(13, 105, 75, .28), transparent 48%),
+    linear-gradient(145deg, #07130f 0%, #0b1118 48%, #061b16 100%);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .7s ease, visibility .7s ease;
+}
+
+.launch-screen.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.launch-ambient {
+  position: absolute;
+  z-index: -1;
+  width: 65vw;
+  height: 65vw;
+  max-width: 520px;
+  max-height: 520px;
+  border-radius: 50%;
+  filter: blur(75px);
+  opacity: .23;
+  pointer-events: none;
+}
+
+.launch-ambient-one {
+  top: -25%;
+  left: -25%;
+  background: #087f5b;
+  animation: launchAmbient 7s ease-in-out infinite alternate;
+}
+
+.launch-ambient-two {
+  right: -25%;
+  bottom: -30%;
+  background: #20b486;
+  animation: launchAmbient 9s ease-in-out infinite alternate-reverse;
+}
+
+.launch-content {
+  width: min(86%, 360px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: launchContentIn 1s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.launch-orbit {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 32px;
+}
+
+.launch-orbit-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(66, 224, 169, .55);
+  border-radius: 50%;
+  box-shadow: 0 0 25px rgba(32, 180, 134, .12),
+              inset 0 0 22px rgba(32, 180, 134, .08);
+  animation: launchRing 3.5s ease-in-out infinite;
+}
+
+.launch-orbit-ring-two {
+  inset: 12px;
+  border-color: rgba(212, 175, 55, .38);
+  animation: launchRing 3.5s ease-in-out infinite reverse;
+}
+
+.launch-logo {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(116, 255, 207, .65);
+  border-radius: 23px;
+  background: linear-gradient(145deg, #20b486, #075b43);
+  color: #fff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  box-shadow: 0 0 25px rgba(32, 180, 134, .48),
+              0 0 75px rgba(32, 180, 134, .22);
+  animation: launchLogoPulse 2.2s ease-in-out infinite;
+}
+
+.launch-orbit-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: 8px;
+  right: 22px;
+  border-radius: 50%;
+  background: #d4af37;
+  box-shadow: 0 0 16px #d4af37;
+  animation: launchDot 3.5s linear infinite;
+  transform-origin: -45px 58px;
+}
+
+.launch-brand {
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(27px, 8vw, 36px);
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #f8fafc;
+}
+
+.launch-brand span {
+  color: #42d6a6;
+}
+
+.launch-tagline {
+  margin-top: 11px;
+  color: #d4af37;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.launch-loader {
+  width: min(250px, 85%);
+  margin-top: 58px;
+}
+
+.launch-loader-track {
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgba(255,255,255,.13);
+}
+
+.launch-loader-fill {
+  width: 38%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #087f5b, #5cf0b9, #d4af37);
+  box-shadow: 0 0 13px rgba(66, 214, 166, .8);
+  animation: launchLoading 1.65s ease-in-out infinite;
+}
+
+.launch-loader > span {
+  display: block;
+  margin-top: 15px;
+  color: #91a99f;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+}
+
+.launch-bottom {
+  position: absolute;
+  bottom: max(30px, env(safe-area-inset-bottom));
+  color: rgba(201, 224, 214, .5);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+.launch-particles span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #59e7b3;
+  box-shadow: 0 0 12px #20b486;
+  opacity: 0;
+  animation: launchParticle 5s ease-in-out infinite;
+}
+
+.launch-particles span:nth-child(1) { left: 12%; top: 22%; animation-delay: .2s; }
+.launch-particles span:nth-child(2) { left: 82%; top: 19%; animation-delay: 1s; }
+.launch-particles span:nth-child(3) { left: 20%; top: 72%; animation-delay: 1.8s; }
+.launch-particles span:nth-child(4) { left: 88%; top: 68%; animation-delay: 2.6s; }
+.launch-particles span:nth-child(5) { left: 50%; top: 13%; animation-delay: 3.4s; }
+.launch-particles span:nth-child(6) { left: 8%; top: 49%; animation-delay: 1.4s; }
+.launch-particles span:nth-child(7) { left: 92%; top: 43%; animation-delay: 2.2s; }
+.launch-particles span:nth-child(8) { left: 37%; top: 84%; animation-delay: .8s; }
+.launch-particles span:nth-child(9) { left: 68%; top: 87%; animation-delay: 3s; }
+
+@keyframes launchContentIn {
+  from { opacity: 0; transform: translateY(22px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes launchLogoPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(32,180,134,.48), 0 0 75px rgba(32,180,134,.22); }
+  50% { transform: scale(1.07); box-shadow: 0 0 38px rgba(32,180,134,.72), 0 0 95px rgba(32,180,134,.34); }
+}
+
+@keyframes launchRing {
+  0%, 100% { transform: scale(.94); opacity: .55; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes launchDot {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes launchLoading {
+  0% { transform: translateX(-110%); }
+  55% { transform: translateX(95%); }
+  100% { transform: translateX(270%); }
+}
+
+@keyframes launchParticle {
+  0%, 100% { opacity: 0; transform: translateY(15px) scale(.5); }
+  35%, 65% { opacity: .85; transform: translateY(-15px) scale(1.2); }
+}
+
+@keyframes launchAmbient {
+  from { transform: translate(0, 0) scale(.9); }
+  to { transform: translate(35px, 25px) scale(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-screen *,
+  .launch-screen *::before,
+  .launch-screen *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .launch-screen {
+    transition-duration: .2s;
+  }
+}
