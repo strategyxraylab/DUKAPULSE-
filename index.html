@@ -365,6 +365,48 @@
           <p id="product-message" class="message" aria-live="polite"></p>
         </form>
 
+        <form id="restock-form" class="product-form restock-form hidden">
+          <h2>Restock an existing product</h2>
+          <p class="form-description">Record incoming stock and update your inventory automatically.</p>
+
+          <div class="product-form-grid">
+            <div>
+              <label for="restock-product">Select product</label>
+              <select id="restock-product" required>
+                <option value="">Choose a product</option>
+              </select>
+            </div>
+            <div>
+              <label for="restock-current-stock">Current stock</label>
+              <input id="restock-current-stock" type="text" value="Select a product" readonly>
+            </div>
+            <div>
+              <label for="restock-quantity">Quantity received</label>
+              <input id="restock-quantity" type="number" min="1" step="1" placeholder="e.g. 20" required>
+            </div>
+            <div>
+              <label for="restock-unit-cost">New purchase cost per unit (KSh)</label>
+              <input id="restock-unit-cost" type="number" min="0" step="0.01" placeholder="e.g. 450" required>
+            </div>
+            <div>
+              <label for="restock-supplier">Supplier</label>
+              <input id="restock-supplier" type="text" maxlength="120" placeholder="Optional supplier name">
+            </div>
+            <div>
+              <label for="restock-date">Purchase date</label>
+              <input id="restock-date" type="date" required>
+            </div>
+          </div>
+
+          <p class="restock-total">Total purchase cost: <strong id="restock-total">KSh 0.00</strong></p>
+
+          <div class="product-form-actions">
+            <button id="restock-submit" class="primary-button" type="submit">Save Restock</button>
+            <button id="cancel-restock" class="logout-button" type="button">Cancel</button>
+          </div>
+          <p id="restock-message" class="message" aria-live="polite"></p>
+        </form>
+
         <div class="inventory-panel">
           <div class="inventory-toolbar">
             <div>

@@ -1696,3 +1696,87 @@ form input::placeholder {
     padding: 16px;
   }
 }
+
+/* =================================
+   STOCK RESTOCKING FORM
+================================= */
+
+.restock-form .form-description {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.product-form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 45px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--text, #26352c);
+  font: inherit;
+  font-size: 13px;
+}
+
+.product-form input[readonly] {
+  background: #f1f5f3;
+  color: #64748b;
+  cursor: default;
+}
+
+.restock-total {
+  margin-top: 20px;
+  padding: 15px 17px;
+  border: 1px solid rgba(32, 180, 134, .25);
+  border-radius: 10px;
+  background: rgba(32, 180, 134, .07);
+  color: var(--text, #26352c);
+  font-size: 13px;
+}
+
+.restock-total strong {
+  margin-left: 6px;
+  color: #087f5b;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.restock-form .product-form-actions {
+  margin-top: 18px;
+}
+
+.restock-form .message {
+  margin-top: 12px;
+}
+
+/* INVENTORY RESTOCK ACTION */
+#inventory-view .inventory-table .record-action-cell {
+  min-width: 112px;
+}
+
+.record-restock-button {
+  display: inline-block;
+  margin: 2px 5px 2px 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(32, 180, 134, .35);
+  border-radius: 8px;
+  background: rgba(32, 180, 134, .10);
+  color: #087f5b;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.record-restock-button:hover {
+  background: rgba(32, 180, 134, .18);
+}
+
+.record-restock-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}

@@ -173,9 +173,21 @@ function addTableCell(row, value) {
 }
 
 
-function addTapToRevealDelete(row, recordLabel, deleteHandler) {
+function addTapToRevealDelete(row, recordLabel, deleteHandler, restockHandler = null) {
   const actionCell = document.createElement("td");
   actionCell.className = "record-action-cell";
+
+  if (restockHandler) {
+    const restockButton = document.createElement("button");
+    restockButton.type = "button";
+    restockButton.className = "record-restock-button";
+    restockButton.textContent = "＋ Restock";
+    restockButton.addEventListener("click", event => {
+      event.stopPropagation();
+      restockHandler();
+    });
+    actionCell.appendChild(restockButton);
+  }
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
@@ -267,6 +279,8 @@ async function deleteExpenseRecord(expense) {
   showMessage("expense-message", "Expense deleted successfully.");
 }
 
+let inventoryProducts = [];
+
 async function loadProducts() {
   const tableBody = document.getElementById("inventory-table-body");
   const countLabel = document.getElementById("inventory-count");
@@ -301,6 +315,30 @@ async function loadProducts() {
   }
 
   const products = data || [];
+  inventoryProducts = products;
+
+  const productSelect = document.getElementById("restock-product");
+  if (productSelect) {
+    const previousSelection = productSelect.value;
+    productSelect.replaceChildren();
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Choose a product";
+    productSelect.appendChild(placeholder);
+
+    products.forEach(product => {
+      const option = document.createElement("option");
+      option.value = product.id;
+      option.textContent = product.product_name;
+      productSelect.appendChild(option);
+    });
+
+    if (products.some(product => product.id === previousSelection)) {
+      productSelect.value = previousSelection;
+    }
+  }
+
   countLabel.textContent = `${products.length} product${products.length === 1 ? "" : "s"}`;
   stockCount.textContent = products.length;
   stockCaption.textContent = "Products in your inventory";
@@ -342,7 +380,8 @@ async function loadProducts() {
     addTapToRevealDelete(
       row,
       `product "${product.product_name}"`,
-      () => deleteProductRecord(product)
+      () => deleteProductRecord(product),
+      () => openRestockForm(product.id)
     );
 
     tableBody.appendChild(row);
@@ -350,6 +389,150 @@ async function loadProducts() {
 
   showMessage("inventory-message", "");
 }
+
+
+function updateRestockProductPreview() {
+  const productId = document.getElementById("restock-product").value;
+  const product = inventoryProducts.find(item => item.id === productId);
+  document.getElementById("restock-current-stock").value =
+    product ? `${product.quantity} units currently available` : "Select a product";
+}
+
+function updateRestockTotal() {
+  const quantity = Number(document.getElementById("restock-quantity").value);
+  const unitCost = Number(document.getElementById("restock-unit-cost").value);
+  const total = quantity > 0 && unitCost >= 0 ? quantity * unitCost : 0;
+  document.getElementById("restock-total").textContent = formatKES(total);
+}
+
+function openRestockForm(productId = "") {
+  const form = document.getElementById("restock-form");
+  form.classList.remove("hidden");
+
+  document.getElementById("product-form").classList.add("hidden");
+  document.getElementById("restock-product").value = productId;
+
+  const dateInput = document.getElementById("restock-date");
+  if (!dateInput.value) {
+    const now = new Date();
+    const localDate = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0")
+    ].join("-");
+    dateInput.value = localDate;
+  }
+
+  updateRestockProductPreview();
+  updateRestockTotal();
+  showMessage("restock-message", "");
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+document.getElementById("restock-product").addEventListener("change", updateRestockProductPreview);
+document.getElementById("restock-quantity").addEventListener("input", updateRestockTotal);
+document.getElementById("restock-unit-cost").addEventListener("input", updateRestockTotal);
+
+document.getElementById("cancel-restock").addEventListener("click", () => {
+  document.getElementById("restock-form").reset();
+  document.getElementById("restock-form").classList.add("hidden");
+  document.getElementById("restock-current-stock").value = "Select a product";
+  updateRestockTotal();
+  showMessage("restock-message", "");
+});
+
+document.getElementById("restock-form").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!currentBusinessRecord || !currentUser || !supabaseClient) {
+    showMessage("restock-message", "Your business connection is not ready. Please refresh.");
+    return;
+  }
+
+  const productId = document.getElementById("restock-product").value;
+  const product = inventoryProducts.find(item => item.id === productId);
+  const quantity = Number(document.getElementById("restock-quantity").value);
+  const unitCost = Number(document.getElementById("restock-unit-cost").value);
+  const supplier = document.getElementById("restock-supplier").value.trim();
+  const purchaseDate = document.getElementById("restock-date").value;
+  const saveButton = document.getElementById("restock-submit");
+
+  if (!product) {
+    showMessage("restock-message", "Please select an existing product.");
+    return;
+  }
+
+  if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+    showMessage("restock-message", "Enter a whole number of units greater than zero.");
+    return;
+  }
+
+  if (!Number.isFinite(unitCost) || unitCost < 0) {
+    showMessage("restock-message", "Enter a valid purchase cost per unit.");
+    return;
+  }
+
+  if (!purchaseDate) {
+    showMessage("restock-message", "Please select the purchase date.");
+    return;
+  }
+
+  saveButton.disabled = true;
+  showMessage("restock-message", "Recording stock purchase...");
+
+  try {
+    const purchasedAt = new Date(`${purchaseDate}T12:00:00`).toISOString();
+
+    const { data, error } = await supabaseClient.rpc("record_stock_purchase", {
+      p_business_id: currentBusinessRecord.id,
+      p_product_id: product.id,
+      p_quantity: quantity,
+      p_unit_cost_price: unitCost,
+      p_supplier: supplier || null,
+      p_purchased_at: purchasedAt
+    });
+
+    if (error) throw error;
+
+    if (!data || data.success !== true) {
+      throw new Error(data?.message || "The stock purchase could not be confirmed.");
+    }
+
+    const newQuantity = data.new_quantity !== undefined
+      ? data.new_quantity
+      : "updated";
+
+    document.getElementById("restock-form").reset();
+    document.getElementById("restock-form").classList.add("hidden");
+    document.getElementById("restock-current-stock").value = "Select a product";
+    updateRestockTotal();
+
+    const refreshResults = await Promise.allSettled([
+      loadProducts(),
+      loadExpenses(),
+      loadDashboardAnalytics()
+    ]);
+
+    const refreshFailed = refreshResults.some(result => result.status === "rejected");
+
+    let successMessage =
+      `${product.product_name}: ${quantity} units added successfully. ` +
+      `New stock: ${newQuantity}. Purchase recorded: ${formatKES(quantity * unitCost)}.`;
+
+    if (refreshFailed) {
+      successMessage += " Some screen data could not refresh. Please reload the page.";
+      console.warn("Stock was saved, but one or more screens failed to refresh:", refreshResults);
+    }
+
+    showMessage("inventory-message", successMessage);
+
+  } catch (error) {
+    showMessage("restock-message", error.message || "Could not record the stock purchase.");
+    console.error("Stock restock failed:", error);
+  } finally {
+    saveButton.disabled = false;
+  }
+});
 
 document.getElementById("product-form").addEventListener("submit", async event => {
   event.preventDefault();
