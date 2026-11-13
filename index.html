@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#087d48">
+  <meta name="description" content="DUKAPULSE helps African retailers manage sales, expenses, profit and stock.">
+  <title>DUKAPULSE | Business Management</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <main class="auth-layout">
+
+    <section class="brand-panel">
+      <div class="brand">
+        <div class="brand-icon">D</div>
+        <span>DUKAPULSE</span>
+      </div>
+
+      <div class="brand-message">
+        <span class="eyebrow">SMARTER RETAIL MANAGEMENT</span>
+        <h1>Take control of your business.</h1>
+        <p>One simple space to manage your stock, sales, expenses and business performance.</p>
+
+        <div class="feature-list">
+          <div>✓ Track every sale</div>
+          <div>✓ Monitor your inventory</div>
+          <div>✓ Understand your profit</div>
+        </div>
+      </div>
+
+      <div class="brand-footer">KNOW YOUR STOCK. CONTROL YOUR MONEY.</div>
+    </section>
+
+    <section class="form-panel">
+      <div class="mobile-brand">
+        <div class="brand-icon">D</div>
+        <span>DUKAPULSE</span>
+      </div>
+
+      <div class="auth-card">
+
+        <div id="login-view">
+          <span class="eyebrow green">YOUR BUSINESS, IN CONTROL</span>
+          <h2>Welcome back</h2>
+          <p class="subheading">Sign in to continue to your workspace.</p>
+
+          <form id="login-form">
+            <label for="login-email">Email address</label>
+            <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" required>
+
+            <div class="password-heading">
+              <label for="login-password">Password</label>
+              <button type="button" class="text-button" data-toggle="login-password">Show</button>
+            </div>
+            <input id="login-password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+
+            <button type="button" class="forgot-button" data-view="forgot">Forgot password?</button>
+
+            <button class="primary-button" type="submit">Sign In <span>→</span></button>
+            <p id="login-message" class="message" aria-live="polite"></p>
+          </form>
+
+          <p class="switch-text">Don't have an account? <button type="button" data-view="register">Create account</button></p>
+        </div>
+
+        <div id="register-view" class="hidden">
+          <span class="eyebrow green">START YOUR JOURNEY</span>
+          <h2>Create your account</h2>
+          <p class="subheading">Set up your business workspace.</p>
+
+          <form id="register-form">
+            <label for="business-name">Business name</label>
+            <input id="business-name" type="text" placeholder="Your shop name" required>
+
+            <label for="register-email">Email address</label>
+            <input id="register-email" type="email" placeholder="you@example.com" autocomplete="email" required>
+
+            <label for="register-password">Create password</label>
+            <input id="register-password" type="password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required>
+
+            <button class="primary-button" type="submit">Create Account <span>→</span></button>
+            <p id="register-message" class="message" aria-live="polite"></p>
+          </form>
+
+          <p class="switch-text">Already registered? <button type="button" data-view="login">Sign in</button></p>
+        </div>
+
+        <div id="forgot-view" class="hidden">
+          <span class="eyebrow green">ACCOUNT RECOVERY</span>
+          <h2>Reset your password</h2>
+          <p class="subheading">Enter your email to request a password reset.</p>
+
+          <form id="forgot-form">
+            <label for="forgot-email">Email address</label>
+            <input id="forgot-email" type="email" placeholder="you@example.com" required>
+
+            <button class="primary-button" type="submit">Send Reset Link <span>→</span></button>
+            <p id="forgot-message" class="message" aria-live="polite"></p>
+          </form>
+
+          <p class="switch-text"><button type="button" data-view="login">← Back to sign in</button></p>
+        </div>
+
+        <div id="reset-view" class="hidden">
+          <span class="eyebrow green">SECURE ACCOUNT RECOVERY</span>
+          <h2>Create a new password</h2>
+          <p class="subheading">Choose a new password for your DUKAPULSE account.</p>
+
+          <form id="reset-form">
+            <label for="new-password">New password</label>
+            <input id="new-password" type="password"
+              placeholder="At least 8 characters"
+              minlength="8" autocomplete="new-password" required>
+
+            <label for="confirm-password">Confirm new password</label>
+            <input id="confirm-password" type="password"
+              placeholder="Enter your new password again"
+              minlength="8" autocomplete="new-password" required>
+
+            <button class="primary-button" type="submit">
+              Update Password <span>→</span>
+            </button>
+            <p id="reset-message" class="message" aria-live="polite"></p>
+          </form>
+        </div>
+
+      </div>
+
+      <footer class="form-footer">
+        © 2026 DUKAPULSE. Built for smarter businesses.
+      </footer>
+    </section>
+
+  </main>
+
+
+  <!-- AUTHENTICATED DASHBOARD -->
+  <section id="dashboard-view" class="dashboard hidden">
+
+    <header class="dashboard-header">
+      <div class="brand">
+        <div class="brand-icon">D</div>
+        <span>DUKAPULSE</span>
+      </div>
+      <button id="logout-button" class="logout-button" type="button">Log out</button>
+    </header>
+
+    <nav class="dashboard-nav" aria-label="Business navigation">
+      <button class="nav-link active" type="button" data-section="dashboard-home">Overview</button>
+      <button class="nav-link" type="button" data-section="inventory-view">Inventory</button>
+      <button class="nav-link" type="button" data-section="sales-view">Sales</button>
+      <button class="nav-link" type="button" data-section="expenses-view">Expenses</button>
+      <button class="nav-link" type="button" data-section="reports-view">Reports</button>
+    </nav>
+
+    <main class="dashboard-content">
+
+      <section id="dashboard-home" class="workspace-section">
+        <div class="dashboard-welcome">
+          <span class="eyebrow green">BUSINESS OVERVIEW</span>
+          <h1>Welcome, <span id="dashboard-business-name">Business</span>!</h1>
+          <p id="dashboard-business-status">Your business workspace is ready.</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="dashboard-card">
+            <span>Today's sales</span>
+            <strong id="dashboard-today-sales">—</strong>
+            <small id="dashboard-today-sales-caption">Loading sales</small>
+          </article>
+
+          <article class="dashboard-card">
+            <span>Today's expenses</span>
+            <strong id="dashboard-today-expenses">—</strong>
+            <small id="dashboard-today-expenses-caption">Loading expenses</small>
+          </article>
+
+          <article class="dashboard-card">
+            <span>Estimated profit today</span>
+            <strong id="dashboard-today-profit">—</strong>
+            <small id="dashboard-today-profit-caption">After product costs and expenses</small>
+          </article>
+
+          <article class="dashboard-card">
+            <span>Stock items</span>
+            <strong id="dashboard-stock-count">—</strong>
+            <small id="dashboard-stock-caption">Loading inventory</small>
+          </article>
+
+          <article class="dashboard-card">
+            <span>This month's sales</span>
+            <strong id="dashboard-month-sales">—</strong>
+            <small id="dashboard-month-sales-caption">Loading monthly revenue</small>
+          </article>
+        </div>
+
+        <div class="overview-panels">
+          <section class="overview-panel">
+            <div class="section-heading">
+              <div>
+                <h2>Low-stock alerts</h2>
+                <p id="dashboard-low-stock-count">Checking inventory...</p>
+              </div>
+              <button class="text-action workspace-action" type="button"
+                data-section="inventory-view">View inventory →</button>
+            </div>
+            <div id="dashboard-low-stock-list" class="overview-list">
+              <p class="overview-empty">Loading stock alerts...</p>
+            </div>
+          </section>
+
+          <section class="overview-panel">
+            <div class="section-heading">
+              <div>
+                <h2>Recent activity</h2>
+                <p>Your latest sales and expenses</p>
+              </div>
+            </div>
+            <div id="dashboard-recent-activity" class="overview-list">
+              <p class="overview-empty">Loading recent activity...</p>
+            </div>
+          </section>
+        </div>
+
+      </section>
+
+      <section id="inventory-view" class="workspace-section hidden">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow green">PRODUCT MANAGEMENT</span>
+            <h1>Inventory</h1>
+            <p>Manage your products, prices and available stock.</p>
+          </div>
+          <button id="show-product-form" class="primary-button add-product-button" type="button">＋ Add Product</button>
+        </div>
+
+        <form id="product-form" class="product-form hidden">
+          <h2>Add a product</h2>
+          <div class="product-form-grid">
+            <div>
+              <label for="product-name">Product name</label>
+              <input id="product-name" type="text" maxlength="120" placeholder="e.g. Classic T-shirt" required>
+            </div>
+            <div>
+              <label for="product-category">Category</label>
+              <input id="product-category" type="text" maxlength="80" placeholder="e.g. Clothing">
+            </div>
+            <div>
+              <label for="product-sku">SKU / Code</label>
+              <input id="product-sku" type="text" maxlength="60" placeholder="Optional">
+            </div>
+            <div>
+              <label for="product-size">Size</label>
+              <input id="product-size" type="text" maxlength="40" placeholder="Optional">
+            </div>
+            <div>
+              <label for="product-color">Colour</label>
+              <input id="product-color" type="text" maxlength="40" placeholder="Optional">
+            </div>
+            <div>
+              <label for="product-cost">Cost price (KSh)</label>
+              <input id="product-cost" type="number" min="0" step="0.01" placeholder="0.00" required>
+            </div>
+            <div>
+              <label for="product-selling">Selling price (KSh)</label>
+              <input id="product-selling" type="number" min="0" step="0.01" placeholder="0.00" required>
+            </div>
+            <div>
+              <label for="product-quantity">Quantity</label>
+              <input id="product-quantity" type="number" min="0" step="1" placeholder="0" required>
+            </div>
+            <div>
+              <label for="product-threshold">Low-stock alert at</label>
+              <input id="product-threshold" type="number" min="0" step="1" value="5" required>
+            </div>
+          </div>
+          <div class="product-form-actions">
+            <button class="primary-button" type="submit">Save Product</button>
+            <button id="cancel-product-form" class="logout-button" type="button">Cancel</button>
+          </div>
+          <p id="product-message" class="message" aria-live="polite"></p>
+        </form>
+
+        <div class="inventory-panel">
+          <div class="inventory-toolbar">
+            <div>
+              <h2>All products</h2>
+              <p id="inventory-count">Loading products...</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Cost price</th>
+                  <th>Selling price</th>
+                  <th>Quantity</th>
+                  <th>Stock status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body">
+                <tr><td colspan="7" class="table-empty">Loading your inventory...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p id="inventory-message" class="message" aria-live="polite"></p>
+        </div>
+      </section>
+
+
+      <section id="sales-view" class="workspace-section hidden">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow green">TRANSACTION MANAGEMENT</span>
+            <h1>Record a Sale</h1>
+            <p>Select products, enter quantities and record customer payments.</p>
+          </div>
+        </div>
+
+        <div class="inventory-panel sales-panel">
+          <h2>New sale</h2>
+          <p class="sales-description">Add products to this transaction.</p>
+
+          <div class="sales-add-row">
+            <div>
+              <label for="sale-product">Select product</label>
+              <select id="sale-product" required>
+                <option value="">Loading products...</option>
+              </select>
+            </div>
+            <div>
+              <label for="sale-quantity">Quantity</label>
+              <input id="sale-quantity" type="number" min="1" step="1" value="1">
+            </div>
+            <button id="add-sale-item" class="primary-button" type="button">
+              Add item
+            </button>
+          </div>
+
+          <div class="table-wrap sales-cart-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Unit price</th>
+                  <th>Quantity</th>
+                  <th>Subtotal</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="sales-cart-body">
+                <tr>
+                  <td colspan="5" class="table-empty">No products added yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sales-checkout">
+            <div>
+              <label for="sale-payment-method">Payment method</label>
+              <select id="sale-payment-method" required>
+                <option value="Cash">Cash</option>
+                <option value="M-Pesa">M-Pesa</option>
+                <option value="Card">Card</option>
+                <option value="Bank">Bank</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="sales-total">
+              <span>Sale total</span>
+              <strong id="sale-total">KSh 0.00</strong>
+            </div>
+          </div>
+
+          <button id="complete-sale" class="primary-button sales-submit" type="button">
+            Complete Sale
+          </button>
+          <p id="sales-message" class="message" aria-live="polite"></p>
+        </div>
+
+        <div class="inventory-panel">
+          <div class="inventory-toolbar">
+            <div>
+              <h2>Recent sales</h2>
+              <p id="sales-history-count">Your recorded transactions</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Sale total</th>
+                  <th>Payment method</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="sales-history-body">
+                <tr>
+                  <td colspan="4" class="table-empty">No sales loaded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="expenses-view" class="workspace-section hidden">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow green">BUSINESS COST MANAGEMENT</span>
+            <h1>Track Expenses</h1>
+            <p>Record and monitor the money your business spends.</p>
+          </div>
+        </div>
+
+        <div class="inventory-panel expense-panel">
+          <h2>Record a new expense</h2>
+          <p class="sales-description">Keep track of every business cost.</p>
+
+          <form id="expense-form">
+            <div class="expense-form-grid">
+              <div>
+                <label for="expense-description">Expense description</label>
+                <input id="expense-description" type="text"
+                  placeholder="e.g. Shop rent" maxlength="120" required>
+              </div>
+
+              <div>
+                <label for="expense-category">Category</label>
+                <select id="expense-category" required>
+                  <option value="">Choose category</option>
+                  <option value="Rent">Rent</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Salaries">Salaries</option>
+                  <option value="Electricity">Electricity</option>
+                  <option value="Water">Water</option>
+                  <option value="Stock Purchase">Stock Purchase</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Internet">Internet</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="expense-amount">Amount (KSh)</label>
+                <input id="expense-amount" type="number"
+                  min="0.01" step="0.01" placeholder="e.g. 500" required>
+              </div>
+
+              <div>
+                <label for="expense-date">Expense date</label>
+                <input id="expense-date" type="date" required>
+              </div>
+            </div>
+
+            <button id="save-expense" class="primary-button" type="submit">
+              Save Expense
+            </button>
+            <p id="expense-message" class="message" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div class="inventory-panel">
+          <div class="inventory-toolbar">
+            <div>
+              <h2>Expense history</h2>
+              <p id="expense-history-count">Your recorded expenses</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="expense-history-body">
+                <tr>
+                  <td colspan="5" class="table-empty">
+                    No expenses loaded yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+\n
+      <section id="reports-view" class="workspace-section hidden">
+        <div class="dashboard-welcome">
+          <span class="eyebrow green">BUSINESS PERFORMANCE</span>
+          <h1>Business Reports</h1>
+          <p>Understand your revenue, costs and business profit.</p>
+        </div>
+
+        <div class="expense-panel report-panel">
+          <div class="section-heading">
+            <div>
+              <h2>Report period</h2>
+              <p>Choose the dates you want to analyse.</p>
+            </div>
+          </div>
+
+          <div class="expense-form-grid report-date-grid">
+            <div>
+              <label for="report-start-date">Start date</label>
+              <input type="date" id="report-start-date">
+            </div>
+            <div>
+              <label for="report-end-date">End date</label>
+              <input type="date" id="report-end-date">
+            </div>
+          </div>
+
+          <button class="primary-button" type="button" id="load-reports">
+            Generate Report
+          </button>
+          <p id="report-message" role="status"></p>
+        </div>
+
+        <div class="report-grid">
+          <article class="report-card">
+            <span>Total Revenue</span>
+            <strong id="report-revenue">KSh 0.00</strong>
+            <small id="report-sales-count">0 sales</small>
+          </article>
+
+          <article class="report-card">
+            <span>Cost of Goods Sold</span>
+            <strong id="report-cogs">KSh 0.00</strong>
+            <small>Original cost of products sold</small>
+          </article>
+
+          <article class="report-card">
+            <span>Operating Expenses</span>
+            <strong id="report-expenses">KSh 0.00</strong>
+            <small>Business running costs</small>
+          </article>
+
+          <article class="report-card">
+            <span>Net Profit</span>
+            <strong id="report-profit">KSh 0.00</strong>
+            <small>Revenue minus costs and expenses</small>
+          </article>
+
+          <article class="report-card">
+            <span>Inventory Purchases</span>
+            <strong id="report-stock-purchases">KSh 0.00</strong>
+            <small>Shown separately to avoid double-counting</small>
+          </article>
+
+          <article class="report-card">
+            <span>Gross Profit</span>
+            <strong id="report-gross-profit">KSh 0.00</strong>
+            <small>Revenue minus cost of goods sold</small>
+          </article>
+        </div>
+
+        <div class="expense-panel report-panel">
+          <div class="section-heading">
+            <div>
+              <h2>Expense breakdown</h2>
+              <p>Recorded spending during the selected period.</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Transactions</th>
+                  <th>Total Amount</th>
+                </tr>
+              </thead>
+              <tbody id="report-expense-body">
+                <tr>
+                  <td colspan="3" class="table-empty">Generate a report to see expenses.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+\n    </main>
+
+    <footer class="dashboard-footer">
+      DUKAPULSE · KNOW YOUR STOCK. CONTROL YOUR MONEY.
+    </footer>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
