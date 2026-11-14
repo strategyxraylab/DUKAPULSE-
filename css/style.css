@@ -3802,3 +3802,151 @@ form input::placeholder {
     padding: 9px 10px;
   }
 }
+
+/* =========================================
+   DUKAPULSE — RESPONSIVE TYPOGRAPHY V2
+   Phones + Desktop
+========================================= */
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Responsive heading hierarchy */
+h1 {
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: clamp(21px, 2.4vw, 27px);
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: clamp(18px, 2vw, 21px);
+  line-height: 1.35;
+}
+
+/* Readable text without overriding icon buttons */
+p,
+li,
+label {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Secondary labels */
+small,
+.eyebrow,
+.settings-card .eyebrow,
+.settings-coming-soon {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Form controls */
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 16px;
+  min-height: 46px;
+}
+
+button,
+.primary-button,
+.logout-button {
+  font-family: inherit;
+}
+
+/* Workspace navigation */
+.nav-link {
+  font-size: 14px;
+}
+
+/* Inventory and other data tables */
+.inventory-table {
+  font-size: 14px;
+}
+
+.inventory-table th {
+  font-size: 12px;
+}
+
+.inventory-table td {
+  font-size: 14px;
+}
+
+#debtors-view .debt-table {
+  font-size: 14px;
+}
+
+#debtors-view .debt-table th {
+  font-size: 12px;
+}
+
+#debtors-view .debt-table td {
+  font-size: 14px;
+}
+
+/* Settings menu */
+.settings-menu button {
+  font-size: 15px;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  body {
+    font-size: 17px;
+  }
+
+  p,
+  li,
+  label {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .nav-link {
+    font-size: 15px;
+  }
+
+  .inventory-table,
+  .inventory-table td {
+    font-size: 15px;
+  }
+
+  .inventory-table th {
+    font-size: 13px;
+  }
+
+  #debtors-view .debt-table,
+  #debtors-view .debt-table td {
+    font-size: 15px;
+  }
+
+  #debtors-view .debt-table th {
+    font-size: 13px;
+  }
+}
+
+/* Smaller phones: preserve fit */
+@media (max-width: 380px) {
+  .nav-link {
+    padding: 10px 13px;
+    font-size: 13px;
+  }
+
+  .dashboard-content {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
