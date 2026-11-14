@@ -3530,23 +3530,28 @@ form input::placeholder {
 }
 
 .settings-menu-button {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  background: #fff;
-  color: var(--green);
-  font-size: 27px;
+  border: 1px solid #cfe4d6;
+  border-radius: 13px;
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-size: 34px;
+  font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  transition: background .2s ease, border-color .2s ease;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
 }
 
 .settings-menu-button:hover {
   background: var(--green-light);
   border-color: var(--green);
+}
+
+.settings-menu-button:active {
+  transform: scale(0.94);
 }
 
 .settings-menu {
@@ -3749,8 +3754,9 @@ form input::placeholder {
   }
 
   .settings-menu-button {
-    width: 39px;
-    height: 39px;
+    width: 48px;
+    height: 48px;
+    font-size: 34px;
   }
 
   .logout-button {
