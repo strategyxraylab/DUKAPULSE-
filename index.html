@@ -193,6 +193,7 @@
   <button class="nav-link" type="button" data-section="sales-history-view">Sales History</button>
       <button class="nav-link" type="button" data-section="expenses-view">Expenses</button>
       <button class="nav-link" type="button" data-section="reports-view">Reports</button>
+      <button class="nav-link" type="button" data-section="debtors-view">Debtors</button>
     </nav>
 
     <main class="dashboard-content">
@@ -856,7 +857,176 @@
           </div>
         </div>
       </section>
-\n    </main>
+\n
+      <section id="debtors-view" class="workspace-section hidden">
+        <div class="dashboard-welcome debtors-welcome">
+          <span class="eyebrow">ACCOUNTS RECEIVABLE</span>
+          <h1>Debtors & Collections</h1>
+          <p>Track outstanding customer balances and manage incoming payments.</p>
+        </div>
+
+        <div class="debt-summary-grid">
+          <article class="debt-summary-card debt-summary-primary">
+            <span>Total outstanding</span>
+            <strong id="debt-total-outstanding">KSh 0.00</strong>
+            <small>Money customers still owe</small>
+          </article>
+
+          <article class="debt-summary-card">
+            <span>Total collected</span>
+            <strong id="debt-total-collected">KSh 0.00</strong>
+            <small>Payments received against debts</small>
+          </article>
+
+          <article class="debt-summary-card">
+            <span>Active debtors</span>
+            <strong id="debt-active-count">0</strong>
+            <small>Customers with unpaid balances</small>
+          </article>
+
+          <article class="debt-summary-card debt-summary-overdue">
+            <span>Overdue balance</span>
+            <strong id="debt-overdue-total">KSh 0.00</strong>
+            <small id="debt-overdue-count">0 overdue accounts</small>
+          </article>
+        </div>
+
+        <div class="debt-panel">
+          <div class="debt-panel-heading">
+            <div>
+              <span class="debt-kicker">CUSTOMER EXPOSURE</span>
+              <h2>Outstanding balance ranking</h2>
+              <p>Customers ranked from the highest unpaid balance.</p>
+            </div>
+            <span class="debt-panel-mark">TOP DEBTORS</span>
+          </div>
+
+          <div id="debt-ranking-chart" class="debt-ranking-chart">
+            <p class="debt-empty">Your customer ranking will appear here.</p>
+          </div>
+        </div>
+
+        <div class="debt-panel debt-directory-panel">
+          <div class="debt-panel-heading">
+            <div>
+              <span class="debt-kicker">ACCOUNTS DIRECTORY</span>
+              <h2>Customer balances</h2>
+              <p>Review balances, due dates and payment activity.</p>
+            </div>
+            <span id="debt-record-count" class="debt-record-count">0 records</span>
+          </div>
+
+          <div class="debt-filter-row">
+            <input id="debt-search" type="search"
+              placeholder="Search customer name or phone"
+              aria-label="Search debtors">
+            <select id="debt-status-filter" aria-label="Filter debt status">
+              <option value="all">All accounts</option>
+              <option value="outstanding">Outstanding</option>
+              <option value="overdue">Overdue</option>
+              <option value="paid">Fully paid</option>
+            </select>
+          </div>
+
+          <div class="table-wrap debt-table-wrap">
+            <table class="inventory-table debt-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Original debt</th>
+                  <th>Paid</th>
+                  <th>Balance</th>
+                  <th>Due date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="debtors-table-body">
+                <tr>
+                  <td colspan="7" class="table-empty">
+                    Open Debtors to load customer accounts.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p id="debtors-message" class="message" aria-live="polite"></p>
+        </div>
+
+        <div id="debt-payment-panel" class="debt-panel debt-action-panel hidden">
+          <div class="debt-panel-heading">
+            <div>
+              <span class="debt-kicker">PAYMENT COLLECTION</span>
+              <h2>Record a payment</h2>
+              <p id="debt-payment-customer">Select a customer account.</p>
+            </div>
+          </div>
+
+          <form id="debt-payment-form">
+            <input id="debt-payment-id" type="hidden">
+            <div class="debt-payment-grid">
+              <div>
+                <label for="debt-payment-amount">Amount received (KSh)</label>
+                <input id="debt-payment-amount" type="number"
+                  min="0.01" step="0.01" required placeholder="Enter amount">
+              </div>
+              <div>
+                <label for="debt-payment-method">Payment method</label>
+                <select id="debt-payment-method" required>
+                  <option value="Cash">Cash</option>
+                  <option value="M-Pesa">M-Pesa</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank">Bank</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="debt-action-buttons">
+              <button class="primary-button" id="save-debt-payment" type="submit">
+                Save payment
+              </button>
+              <button class="history-reset-button" id="cancel-debt-payment" type="button">
+                Cancel
+              </button>
+            </div>
+            <p id="debt-payment-message" role="status"></p>
+          </form>
+        </div>
+
+        <div id="debt-history-panel" class="debt-panel hidden">
+          <div class="debt-panel-heading">
+            <div>
+              <span class="debt-kicker">ACCOUNT ACTIVITY</span>
+              <h2>Payment history</h2>
+              <p id="debt-history-customer">Customer payment records.</p>
+            </div>
+            <button id="close-debt-history" class="history-reset-button" type="button">
+              Close
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Date received</th>
+                  <th>Amount</th>
+                  <th>Payment method</th>
+                </tr>
+              </thead>
+              <tbody id="debt-history-body">
+                <tr>
+                  <td colspan="3" class="table-empty">
+                    Select a customer to view payment history.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
 
     <footer class="dashboard-footer">
       DUKAPULSE · KNOW YOUR STOCK. CONTROL YOUR MONEY.

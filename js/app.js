@@ -142,6 +142,7 @@ function showWorkspaceSection(sectionId) {
   if (sectionId === "sales-history-view") loadFullSalesHistory();
   if (sectionId === "expenses-view") loadExpenses();
   if (sectionId === "reports-view") loadReports();
+  if (sectionId === "debtors-view") loadDebtors();
 }
 
 document.querySelectorAll("[data-section]").forEach(button => {
@@ -2808,4 +2809,475 @@ document.getElementById("history-previous-button").addEventListener("click", () 
 document.getElementById("history-next-button").addEventListener("click", () => {
   salesHistoryPage++;
   loadFullSalesHistory();
+});
+
+
+// ======================================
+// DUKAPULSE DEBTORS & COLLECTIONS V1
+// ======================================
+
+let debtRecordsCache = [];
+let debtPaymentsCache = [];
+
+function getDebtCustomerKey(debt) {
+  const phone = (debt.customer_phone || "").replace(/\s+/g, "");
+  return phone
+    ? `phone:${phone}`
+    : `name:${(debt.customer_name || "").trim().toLowerCase()}`;
+}
+
+function getLocalDateString() {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function formatDebtDate(value) {
+  if (!value) return "No due date";
+
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleDateString("en-KE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function getDebtPaymentTotal(debtId) {
+  return debtPaymentsCache
+    .filter(payment => payment.debt_id === debtId)
+    .reduce((total, payment) => total + Number(payment.amount || 0), 0);
+}
+
+function getDebtBalance(debt) {
+  return Math.max(
+    0,
+    Number(debt.original_amount || 0) - getDebtPaymentTotal(debt.id)
+  );
+}
+
+function setDebtMessage(message) {
+  const element = document.getElementById("debtors-message");
+  if (element) element.textContent = message;
+}
+
+function createDebtActionButton(label, className, action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = className;
+  button.textContent = label;
+  button.addEventListener("click", action);
+  return button;
+}
+
+async function loadDebtors() {
+  if (!currentBusinessRecord || !supabaseClient) {
+    setDebtMessage("Your business connection is still loading. Please try again.");
+    return;
+  }
+
+  const body = document.getElementById("debtors-table-body");
+  body.innerHTML = `
+    <tr><td colspan="7" class="table-empty">Loading customer accounts...</td></tr>
+  `;
+
+  setDebtMessage("");
+
+  try {
+    const [debtResult, paymentResult] = await Promise.all([
+      supabaseClient
+        .from("debts")
+        .select("id,business_id,sale_id,customer_name,customer_phone,original_amount,due_date,created_at")
+        .eq("business_id", currentBusinessRecord.id)
+        .order("created_at", { ascending: false }),
+
+      supabaseClient
+        .from("debt_payments")
+        .select("id,business_id,debt_id,amount,payment_method,recorded_by,paid_at")
+        .eq("business_id", currentBusinessRecord.id)
+        .order("paid_at", { ascending: false })
+    ]);
+
+    if (debtResult.error) throw debtResult.error;
+    if (paymentResult.error) throw paymentResult.error;
+
+    debtRecordsCache = debtResult.data || [];
+    debtPaymentsCache = paymentResult.data || [];
+
+    renderDebtSummary();
+    renderDebtRanking();
+    renderDebtorsTable();
+
+  } catch (error) {
+    console.error("Debtors loading failed:", error);
+
+    body.textContent = "";
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 7;
+    cell.className = "table-empty";
+    cell.textContent = `Could not load debtor accounts: ${error.message}`;
+    row.appendChild(cell);
+    body.appendChild(row);
+
+    setDebtMessage("Check your connection and Supabase permissions.");
+  }
+}
+
+function renderDebtSummary() {
+  const today = getLocalDateString();
+
+  const outstanding = debtRecordsCache.reduce(
+    (sum, debt) => sum + getDebtBalance(debt),
+    0
+  );
+
+  const collected = debtPaymentsCache.reduce(
+    (sum, payment) => sum + Number(payment.amount || 0),
+    0
+  );
+
+  const activeCustomers = new Set();
+  let overdueTotal = 0;
+  let overdueCount = 0;
+
+  debtRecordsCache.forEach(debt => {
+    const balance = getDebtBalance(debt);
+
+    if (balance > 0) {
+      activeCustomers.add(getDebtCustomerKey(debt));
+    }
+
+    if (balance > 0 && debt.due_date && debt.due_date < today) {
+      overdueTotal += balance;
+      overdueCount++;
+    }
+  });
+
+  document.getElementById("debt-total-outstanding").textContent =
+    formatKES(outstanding);
+
+  document.getElementById("debt-total-collected").textContent =
+    formatKES(collected);
+
+  document.getElementById("debt-active-count").textContent =
+    activeCustomers.size.toLocaleString("en-KE");
+
+  document.getElementById("debt-overdue-total").textContent =
+    formatKES(overdueTotal);
+
+  document.getElementById("debt-overdue-count").textContent =
+    `${overdueCount} overdue account${overdueCount === 1 ? "" : "s"}`;
+}
+
+function renderDebtRanking() {
+  const container = document.getElementById("debt-ranking-chart");
+  const customers = new Map();
+
+  debtRecordsCache.forEach(debt => {
+    const balance = getDebtBalance(debt);
+    if (balance <= 0) return;
+
+    const key = getDebtCustomerKey(debt);
+
+    if (!customers.has(key)) {
+      customers.set(key, {
+        name: debt.customer_name || "Unnamed customer",
+        balance: 0
+      });
+    }
+
+    customers.get(key).balance += balance;
+  });
+
+  const ranked = [...customers.values()]
+    .sort((a, b) => b.balance - a.balance)
+    .slice(0, 8);
+
+  container.textContent = "";
+
+  if (!ranked.length) {
+    const empty = document.createElement("p");
+    empty.className = "debt-empty";
+    empty.textContent = "No outstanding customer balances to rank yet.";
+    container.appendChild(empty);
+    return;
+  }
+
+  const maximum = ranked[0].balance;
+
+  ranked.forEach((customer, index) => {
+    const item = document.createElement("div");
+    item.className = "debt-rank-item";
+
+    const heading = document.createElement("div");
+    heading.className = "debt-rank-heading";
+
+    const name = document.createElement("span");
+    name.className = "debt-rank-name";
+    name.textContent = `${String(index + 1).padStart(2, "0")}  ${customer.name}`;
+
+    const amount = document.createElement("strong");
+    amount.className = "debt-rank-amount";
+    amount.textContent = formatKES(customer.balance);
+
+    heading.append(name, amount);
+
+    const track = document.createElement("div");
+    track.className = "debt-rank-track";
+
+    const bar = document.createElement("div");
+    bar.className = "debt-rank-bar";
+    bar.style.width = `${Math.max(3, customer.balance / maximum * 100)}%`;
+
+    track.appendChild(bar);
+    item.append(heading, track);
+    container.appendChild(item);
+  });
+}
+
+function renderDebtorsTable() {
+  const body = document.getElementById("debtors-table-body");
+  const search = document.getElementById("debt-search").value
+    .trim()
+    .toLowerCase();
+
+  const filter = document.getElementById("debt-status-filter").value;
+  const today = getLocalDateString();
+
+  const filtered = debtRecordsCache.filter(debt => {
+    const balance = getDebtBalance(debt);
+    const overdue = balance > 0 && debt.due_date && debt.due_date < today;
+
+    const matchesSearch =
+      (debt.customer_name || "").toLowerCase().includes(search) ||
+      (debt.customer_phone || "").toLowerCase().includes(search);
+
+    const matchesStatus =
+      filter === "all" ||
+      (filter === "paid" && balance <= 0) ||
+      (filter === "overdue" && overdue) ||
+      (filter === "outstanding" && balance > 0 && !overdue);
+
+    return matchesSearch && matchesStatus;
+  });
+
+  body.textContent = "";
+
+  document.getElementById("debt-record-count").textContent =
+    `${filtered.length} record${filtered.length === 1 ? "" : "s"}`;
+
+  if (!filtered.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 7;
+    cell.className = "table-empty";
+    cell.textContent = debtRecordsCache.length
+      ? "No accounts match your search or filter."
+      : "No credit accounts recorded yet.";
+    row.appendChild(cell);
+    body.appendChild(row);
+    return;
+  }
+
+  filtered.forEach(debt => {
+    const balance = getDebtBalance(debt);
+    const paid = getDebtPaymentTotal(debt.id);
+    const overdue = balance > 0 && debt.due_date && debt.due_date < today;
+
+    const row = document.createElement("tr");
+
+    const customerCell = document.createElement("td");
+    const customerName = document.createElement("strong");
+    customerName.textContent = debt.customer_name || "Unnamed customer";
+    customerCell.appendChild(customerName);
+
+    if (debt.customer_phone) {
+      const phone = document.createElement("small");
+      phone.className = "debt-customer-phone";
+      phone.textContent = debt.customer_phone;
+      customerCell.appendChild(phone);
+    }
+
+    row.appendChild(customerCell);
+    addTableCell(row, formatKES(debt.original_amount));
+    addTableCell(row, formatKES(paid));
+    addTableCell(row, formatKES(balance));
+    addTableCell(row, formatDebtDate(debt.due_date));
+
+    const statusCell = document.createElement("td");
+    const status = document.createElement("span");
+    status.className = balance <= 0
+      ? "debt-status debt-status-paid"
+      : overdue
+        ? "debt-status debt-status-overdue"
+        : "debt-status debt-status-open";
+
+    status.textContent = balance <= 0
+      ? "Paid"
+      : overdue
+        ? "Overdue"
+        : "Outstanding";
+
+    statusCell.appendChild(status);
+    row.appendChild(statusCell);
+
+    const actions = document.createElement("td");
+    actions.className = "debt-row-actions";
+
+    if (balance > 0) {
+      actions.appendChild(
+        createDebtActionButton("Record payment", "debt-action-button", () => {
+          openDebtPayment(debt);
+        })
+      );
+    }
+
+    actions.appendChild(
+      createDebtActionButton("History", "debt-history-button", () => {
+        openDebtHistory(debt);
+      })
+    );
+
+    row.appendChild(actions);
+    body.appendChild(row);
+  });
+}
+
+function openDebtPayment(debt) {
+  const panel = document.getElementById("debt-payment-panel");
+  const amount = document.getElementById("debt-payment-amount");
+  const balance = getDebtBalance(debt);
+
+  document.getElementById("debt-payment-id").value = debt.id;
+  document.getElementById("debt-payment-customer").textContent =
+    `${debt.customer_name} · Outstanding: ${formatKES(balance)}`;
+
+  amount.value = "";
+  amount.max = balance.toFixed(2);
+  document.getElementById("debt-payment-method").value = "Cash";
+  document.getElementById("debt-payment-message").textContent = "";
+
+  panel.classList.remove("hidden");
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  amount.focus();
+}
+
+function closeDebtPayment() {
+  document.getElementById("debt-payment-form").reset();
+  document.getElementById("debt-payment-panel").classList.add("hidden");
+  document.getElementById("debt-payment-message").textContent = "";
+}
+
+async function openDebtHistory(debt) {
+  const panel = document.getElementById("debt-history-panel");
+  const body = document.getElementById("debt-history-body");
+
+  document.getElementById("debt-history-customer").textContent =
+    `${debt.customer_name} · ${debt.customer_phone || "No phone number"}`;
+
+  body.textContent = "";
+
+  const payments = debtPaymentsCache.filter(
+    payment => payment.debt_id === debt.id
+  );
+
+  if (!payments.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 3;
+    cell.className = "table-empty";
+    cell.textContent = "No payments have been recorded for this account.";
+    row.appendChild(cell);
+    body.appendChild(row);
+  } else {
+    payments.forEach(payment => {
+      const row = document.createElement("tr");
+
+      const date = new Date(payment.paid_at);
+      addTableCell(
+        row,
+        Number.isNaN(date.getTime()) ? "—" : date.toLocaleString("en-KE")
+      );
+      addTableCell(row, formatKES(payment.amount));
+      addTableCell(row, payment.payment_method || "—");
+
+      body.appendChild(row);
+    });
+  }
+
+  panel.classList.remove("hidden");
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+document.getElementById("debt-search").addEventListener("input", renderDebtorsTable);
+document.getElementById("debt-status-filter").addEventListener("change", renderDebtorsTable);
+
+document.getElementById("cancel-debt-payment").addEventListener("click", closeDebtPayment);
+document.getElementById("close-debt-history").addEventListener("click", () => {
+  document.getElementById("debt-history-panel").classList.add("hidden");
+});
+
+document.getElementById("debt-payment-form").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const button = document.getElementById("save-debt-payment");
+  const debtId = document.getElementById("debt-payment-id").value;
+  const amount = Number(document.getElementById("debt-payment-amount").value);
+  const method = document.getElementById("debt-payment-method").value;
+  const debt = debtRecordsCache.find(item => item.id === debtId);
+
+  if (!debt) {
+    document.getElementById("debt-payment-message").textContent =
+      "Customer account could not be found. Refresh the page.";
+    return;
+  }
+
+  const balance = getDebtBalance(debt);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    document.getElementById("debt-payment-message").textContent =
+      "Enter a valid payment amount greater than zero.";
+    return;
+  }
+
+  if (amount > balance + 0.000001) {
+    document.getElementById("debt-payment-message").textContent =
+      `Payment cannot exceed the outstanding balance of ${formatKES(balance)}.`;
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Saving payment...";
+  document.getElementById("debt-payment-message").textContent =
+    "Recording payment securely...";
+
+  try {
+    const { error } = await supabaseClient.rpc("record_debt_payment", {
+      p_debt_id: debtId,
+      p_amount: amount,
+      p_payment_method: method
+    });
+
+    if (error) throw error;
+
+    document.getElementById("debt-payment-message").textContent =
+      "Payment recorded successfully.";
+
+    await loadDebtors();
+    closeDebtPayment();
+
+  } catch (error) {
+    console.error("Debt payment failed:", error);
+    document.getElementById("debt-payment-message").textContent =
+      error.message || "Could not record this payment.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Save payment";
+  }
 });

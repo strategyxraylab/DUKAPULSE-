@@ -2954,3 +2954,532 @@ form input::placeholder {
     flex: 1;
   }
 }
+
+/* =========================================
+   DUKAPULSE — LUXURY DEBTORS & COLLECTIONS
+   ========================================= */
+
+#debtors-view {
+  --debt-gold: #d8b45b;
+  --debt-gold-light: #f2d98c;
+  --debt-panel: rgba(19, 19, 19, .94);
+  --debt-muted: #a9a49a;
+  color: #f4f0e7;
+  padding-bottom: 35px;
+}
+
+#debtors-view .debtors-welcome {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 26px;
+  margin-bottom: 22px;
+  border: 1px solid rgba(216,180,91,.28);
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 90% 10%, rgba(216,180,91,.15), transparent 42%),
+    linear-gradient(125deg, #171613, #090909 72%);
+  box-shadow: 0 16px 45px rgba(0,0,0,.22);
+}
+
+#debtors-view .debtors-welcome .eyebrow,
+#debtors-view .debt-kicker {
+  display: inline-block;
+  color: var(--debt-gold);
+  font-size: .69rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+#debtors-view .debtors-welcome h1 {
+  margin: 10px 0 8px;
+  color: #fff8e9;
+  font-size: clamp(1.65rem, 4vw, 2.35rem);
+  letter-spacing: -.8px;
+}
+
+#debtors-view .debtors-welcome p {
+  margin: 0;
+  color: #bcb6a9;
+  line-height: 1.65;
+}
+
+#debtors-view .debt-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+#debtors-view .debt-summary-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  padding: 21px 18px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 17px;
+  background:
+    linear-gradient(145deg, rgba(35,33,28,.98), rgba(13,13,13,.98));
+  box-shadow: 0 12px 28px rgba(0,0,0,.19);
+}
+
+#debtors-view .debt-summary-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--debt-gold), transparent);
+  opacity: .75;
+}
+
+#debtors-view .debt-summary-primary {
+  border-color: rgba(216,180,91,.43);
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(216,180,91,.16), transparent 60%),
+    linear-gradient(145deg, #292318, #11100e);
+}
+
+#debtors-view .debt-summary-overdue {
+  border-color: rgba(205,105,83,.35);
+}
+
+#debtors-view .debt-summary-card > span {
+  display: block;
+  margin-bottom: 13px;
+  color: #c5bdaE;
+  font-size: .79rem;
+  font-weight: 650;
+}
+
+#debtors-view .debt-summary-card strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--debt-gold-light);
+  font-size: clamp(1.15rem, 2.4vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -.5px;
+}
+
+#debtors-view .debt-summary-overdue strong {
+  color: #e8a18c;
+}
+
+#debtors-view .debt-summary-card small {
+  display: block;
+  margin-top: 10px;
+  color: #918b80;
+  font-size: .73rem;
+}
+
+#debtors-view .debt-panel {
+  min-width: 0;
+  margin-bottom: 19px;
+  padding: 23px;
+  border: 1px solid rgba(216,180,91,.19);
+  border-radius: 19px;
+  background:
+    linear-gradient(145deg, rgba(27,26,23,.97), rgba(12,12,12,.98));
+  box-shadow: 0 15px 38px rgba(0,0,0,.23);
+}
+
+#debtors-view .debt-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+#debtors-view .debt-panel-heading h2 {
+  margin: 7px 0;
+  color: #f6efdf;
+  font-size: 1.25rem;
+  letter-spacing: -.3px;
+}
+
+#debtors-view .debt-panel-heading p {
+  margin: 0;
+  color: var(--debt-muted);
+  font-size: .84rem;
+  line-height: 1.5;
+}
+
+#debtors-view .debt-panel-mark,
+#debtors-view .debt-record-count {
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(216,180,91,.28);
+  border-radius: 30px;
+  color: var(--debt-gold-light);
+  background: rgba(216,180,91,.07);
+  font-size: .68rem;
+  font-weight: 750;
+  letter-spacing: .7px;
+}
+
+#debtors-view .debt-ranking-chart {
+  display: grid;
+  gap: 19px;
+}
+
+#debtors-view .debt-rank-item {
+  min-width: 0;
+}
+
+#debtors-view .debt-rank-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+#debtors-view .debt-rank-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #e8e1d2;
+  font-size: .86rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#debtors-view .debt-rank-amount {
+  flex-shrink: 0;
+  color: var(--debt-gold-light);
+  font-size: .85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+#debtors-view .debt-rank-track {
+  height: 11px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 20px;
+  background: #080808;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,.65);
+}
+
+#debtors-view .debt-rank-bar {
+  height: 100%;
+  min-width: 3px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #86621f, #d1a747 58%, #f3dc99);
+  box-shadow: 0 0 13px rgba(216,180,91,.27);
+  transition: width .7s cubic-bezier(.2,.75,.25,1);
+}
+
+#debtors-view .debt-empty {
+  margin: 0;
+  padding: 23px 12px;
+  border: 1px dashed rgba(216,180,91,.22);
+  border-radius: 12px;
+  color: #aaa293;
+  text-align: center;
+  font-size: .87rem;
+}
+
+#debtors-view .debt-filter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+#debtors-view .debt-filter-row input,
+#debtors-view .debt-filter-row select,
+#debtors-view .debt-payment-grid input,
+#debtors-view .debt-payment-grid select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 47px;
+  padding: 11px 13px;
+  border: 1px solid rgba(216,180,91,.22);
+  border-radius: 10px;
+  outline: none;
+  background: #10100f;
+  color: #f4eddf;
+  font: inherit;
+  font-size: .88rem;
+}
+
+#debtors-view .debt-filter-row input:focus,
+#debtors-view .debt-filter-row select:focus,
+#debtors-view .debt-payment-grid input:focus,
+#debtors-view .debt-payment-grid select:focus {
+  border-color: var(--debt-gold);
+  box-shadow: 0 0 0 3px rgba(216,180,91,.1);
+}
+
+#debtors-view .debt-filter-row input::placeholder,
+#debtors-view .debt-payment-grid input::placeholder {
+  color: #777166;
+}
+
+#debtors-view .debt-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(216,180,91,.14);
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #8c6b2c #111;
+}
+
+#debtors-view .debt-table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+#debtors-view .debt-table th {
+  padding: 14px 13px;
+  border-bottom: 1px solid rgba(216,180,91,.25);
+  background: #211e17;
+  color: var(--debt-gold-light);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .65px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+#debtors-view .debt-table td {
+  padding: 14px 13px;
+  border-bottom: 1px solid rgba(255,255,255,.065);
+  background: transparent;
+  color: #e5dfd3;
+  font-size: .8rem;
+  vertical-align: middle;
+}
+
+#debtors-view .debt-table tbody tr:hover td {
+  background: rgba(216,180,91,.045);
+}
+
+#debtors-view .debt-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+#debtors-view .debt-table td strong {
+  color: #fff3d9;
+}
+
+#debtors-view .debt-customer-phone {
+  display: block;
+  margin-top: 5px;
+  color: #999184;
+  font-size: .73rem;
+}
+
+#debtors-view .debt-status {
+  display: inline-block;
+  padding: 6px 9px;
+  border: 1px solid;
+  border-radius: 30px;
+  font-size: .68rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+#debtors-view .debt-status-paid {
+  border-color: rgba(105,184,133,.3);
+  background: rgba(105,184,133,.09);
+  color: #91d5a7;
+}
+
+#debtors-view .debt-status-open {
+  border-color: rgba(216,180,91,.32);
+  background: rgba(216,180,91,.08);
+  color: #e8ca7c;
+}
+
+#debtors-view .debt-status-overdue {
+  border-color: rgba(217,113,91,.35);
+  background: rgba(217,113,91,.1);
+  color: #f0a28e;
+}
+
+#debtors-view .debt-row-actions {
+  display: flex;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+#debtors-view .debt-action-button,
+#debtors-view .debt-history-button {
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid rgba(216,180,91,.35);
+  border-radius: 8px;
+  background: rgba(216,180,91,.09);
+  color: var(--debt-gold-light);
+  font: inherit;
+  font-size: .7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#debtors-view .debt-history-button {
+  border-color: rgba(255,255,255,.17);
+  background: rgba(255,255,255,.045);
+  color: #ded7c9;
+}
+
+#debtors-view .debt-action-button:hover,
+#debtors-view .debt-history-button:hover {
+  border-color: var(--debt-gold);
+  background: rgba(216,180,91,.17);
+}
+
+#debtors-view .table-empty {
+  padding: 23px !important;
+  color: #a9a293 !important;
+  text-align: center;
+}
+
+#debtors-view #debtors-message,
+#debtors-view #debt-payment-message {
+  color: var(--debt-gold-light);
+  font-size: .84rem;
+}
+
+#debtors-view .debt-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+#debtors-view .debt-payment-grid label {
+  display: block;
+  margin-bottom: 8px;
+  color: #d8cfbd;
+  font-size: .81rem;
+  font-weight: 650;
+}
+
+#debtors-view .debt-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+#debtors-view .debt-action-buttons button,
+#debtors-view #close-debt-history {
+  min-height: 42px;
+  padding: 10px 17px;
+  border: 1px solid rgba(216,180,91,.38);
+  border-radius: 9px;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+#debtors-view #save-debt-payment {
+  background: linear-gradient(120deg, #a77a29, #e2c16e);
+  color: #17120a;
+}
+
+#debtors-view #save-debt-payment:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+#debtors-view #cancel-debt-payment,
+#debtors-view #close-debt-history {
+  background: transparent;
+  color: var(--debt-gold-light);
+}
+
+#debtors-view #debt-history-panel .table-wrap {
+  overflow-x: auto;
+}
+
+#debtors-view #debt-history-panel .inventory-table {
+  min-width: 480px;
+  background: transparent;
+}
+
+#debtors-view #debt-history-panel th {
+  background: #211e17;
+  color: var(--debt-gold-light);
+}
+
+#debtors-view #debt-history-panel td {
+  background: transparent;
+  color: #e5dfd3;
+  border-color: rgba(255,255,255,.07);
+}
+
+@media (max-width: 900px) {
+  #debtors-view .debt-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  #debtors-view .debtors-welcome {
+    padding: 23px 18px;
+  }
+
+  #debtors-view .debt-panel {
+    padding: 17px 14px;
+    border-radius: 15px;
+  }
+
+  #debtors-view .debt-summary-grid {
+    gap: 10px;
+  }
+
+  #debtors-view .debt-summary-card {
+    padding: 17px 13px;
+    border-radius: 13px;
+  }
+
+  #debtors-view .debt-summary-card > span {
+    font-size: .72rem;
+  }
+
+  #debtors-view .debt-summary-card small {
+    font-size: .67rem;
+    line-height: 1.4;
+  }
+
+  #debtors-view .debt-panel-heading {
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  #debtors-view .debt-panel-mark {
+    font-size: .57rem;
+  }
+
+  #debtors-view .debt-panel-heading h2 {
+    font-size: 1.08rem;
+  }
+
+  #debtors-view .debt-filter-row,
+  #debtors-view .debt-payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #debtors-view .debt-rank-name {
+    font-size: .76rem;
+  }
+
+  #debtors-view .debt-rank-amount {
+    font-size: .74rem;
+  }
+
+  #debtors-view .debt-action-buttons button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 360px) {
+  #debtors-view .debt-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
