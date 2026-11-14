@@ -183,7 +183,28 @@
         <div class="brand-icon">D</div>
         <span>DUKAPULSE</span>
       </div>
-      <button id="logout-button" class="logout-button" type="button">Log out</button>
+      <div class="dashboard-header-actions">
+        <div class="settings-menu-wrap">
+          <button
+            id="settings-menu-button"
+            class="settings-menu-button"
+            type="button"
+            aria-label="More options"
+            aria-expanded="false"
+            aria-controls="settings-menu"
+          >⋮</button>
+
+          <div id="settings-menu" class="settings-menu hidden">
+            <button id="open-settings-button" type="button">
+              <span>⚙</span> Settings
+            </button>
+          </div>
+        </div>
+
+        <button id="logout-button" class="logout-button" type="button">
+          Log out
+        </button>
+      </div>
     </header>
 
     <nav class="dashboard-nav" aria-label="Business navigation">
@@ -1055,6 +1076,85 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+
+      <section id="settings-view" class="workspace-section hidden">
+        <div class="settings-heading">
+          <div>
+            <span class="eyebrow green">PERSONALISE YOUR WORKSPACE</span>
+            <h1>Settings</h1>
+            <p>Manage your business profile and DUKAPULSE preferences.</p>
+          </div>
+          <button class="history-reset-button" type="button" data-section="dashboard-home">
+            Back to overview
+          </button>
+        </div>
+
+        <div class="settings-grid">
+          <article class="settings-card settings-profile-card">
+            <span class="settings-card-icon">▣</span>
+            <span class="eyebrow green">BUSINESS PROFILE</span>
+            <h2>Business name</h2>
+            <p>Update the name displayed across your business workspace.</p>
+
+            <form id="settings-business-form">
+              <label for="settings-business-name">Business name</label>
+              <input
+                id="settings-business-name"
+                name="business_name"
+                type="text"
+                maxlength="80"
+                placeholder="Enter your business name"
+                required
+              >
+              <button class="primary-button" id="save-business-name" type="submit">
+                Save business name
+              </button>
+              <p id="settings-business-message" role="status"></p>
+            </form>
+          </article>
+
+          <article class="settings-card">
+            <span class="settings-card-icon">♙</span>
+            <span class="eyebrow green">ACCOUNT & SECURITY</span>
+            <h2>Account security</h2>
+            <p>Password and account-management options.</p>
+            <span class="settings-coming-soon">More options coming soon</span>
+          </article>
+
+          <article class="settings-card">
+            <span class="settings-card-icon">♢</span>
+            <span class="eyebrow green">NOTIFICATIONS</span>
+            <h2>Notifications</h2>
+            <p>Preferences for business updates and reminders.</p>
+            <span class="settings-coming-soon">More options coming soon</span>
+          </article>
+
+          <article class="settings-card">
+            <span class="settings-card-icon">◐</span>
+            <span class="eyebrow green">APPEARANCE</span>
+            <h2>Display preferences</h2>
+            <p>Workspace appearance and display options.</p>
+            <span class="settings-coming-soon">More options coming soon</span>
+          </article>
+
+          <article class="settings-card">
+            <span class="settings-card-icon">▤</span>
+            <span class="eyebrow green">DATA & BACKUP</span>
+            <h2>Your business data</h2>
+            <p>Data management and backup options.</p>
+            <span class="settings-coming-soon">More options coming soon</span>
+          </article>
+
+          <article class="settings-card">
+            <span class="settings-card-icon">ⓘ</span>
+            <span class="eyebrow green">ABOUT DUKAPULSE</span>
+            <h2>About the app</h2>
+            <p>Business tools designed to help you stay in control.</p>
+            <span class="settings-coming-soon">DUKAPULSE</span>
+          </article>
         </div>
       </section>
 

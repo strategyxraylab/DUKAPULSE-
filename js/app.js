@@ -151,6 +151,108 @@ document.querySelectorAll("[data-section]").forEach(button => {
   });
 });
 
+
+/* SETTINGS MENU */
+const settingsMenuButton = document.getElementById("settings-menu-button");
+const settingsMenu = document.getElementById("settings-menu");
+const openSettingsButton = document.getElementById("open-settings-button");
+
+function closeSettingsMenu() {
+  settingsMenu.classList.add("hidden");
+  settingsMenuButton.setAttribute("aria-expanded", "false");
+}
+
+settingsMenuButton.addEventListener("click", event => {
+  event.stopPropagation();
+
+  const isOpening = settingsMenu.classList.contains("hidden");
+
+  settingsMenu.classList.toggle("hidden", !isOpening);
+  settingsMenuButton.setAttribute("aria-expanded", String(isOpening));
+});
+
+openSettingsButton.addEventListener("click", () => {
+  closeSettingsMenu();
+  showWorkspaceSection("settings-view");
+
+  const nameInput = document.getElementById("settings-business-name");
+  const message = document.getElementById("settings-business-message");
+
+  nameInput.value = currentBusinessRecord?.business_name || "";
+  message.textContent = "";
+});
+
+document.addEventListener("click", event => {
+  if (!event.target.closest(".settings-menu-wrap")) {
+    closeSettingsMenu();
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeSettingsMenu();
+});
+
+
+/* BUSINESS NAME SETTINGS */
+document.getElementById("settings-business-form").addEventListener(
+  "submit",
+  async event => {
+    event.preventDefault();
+
+    const nameInput = document.getElementById("settings-business-name");
+    const saveButton = document.getElementById("save-business-name");
+    const message = document.getElementById("settings-business-message");
+
+    const newName = nameInput.value.trim();
+
+    if (!newName) {
+      message.textContent = "Please enter your business name.";
+      return;
+    }
+
+    if (!currentBusinessRecord || !currentUser || !supabaseClient) {
+      message.textContent = "Your business profile is not ready. Please try again.";
+      return;
+    }
+
+    if (newName === currentBusinessRecord.business_name) {
+      message.textContent = "Your business name is already up to date.";
+      return;
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+    message.textContent = "Updating your business profile...";
+
+    try {
+      const { data, error } = await supabaseClient
+        .from("businesses")
+        .update({ business_name: newName })
+        .eq("id", currentBusinessRecord.id)
+        .eq("owner_id", currentUser.id)
+        .select("id, business_name, currency_code")
+        .single();
+
+      if (error) throw error;
+
+      currentBusinessRecord = data;
+      businessLoadPromise = Promise.resolve(data);
+
+      const dashboardName = document.getElementById("dashboard-business-name");
+      if (dashboardName) dashboardName.textContent = data.business_name;
+
+      nameInput.value = data.business_name;
+      message.textContent = "Business name updated successfully.";
+    } catch (error) {
+      console.error("Business name update failed:", error);
+      message.textContent = error.message || "Could not update your business name.";
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = "Save business name";
+    }
+  }
+);
+
 document.getElementById("show-product-form").addEventListener("click", () => {
   document.getElementById("product-form").classList.remove("hidden");
   document.getElementById("product-name").focus();
