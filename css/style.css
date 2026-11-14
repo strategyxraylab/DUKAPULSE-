@@ -811,8 +811,8 @@ form input::placeholder {
   background: #f3f8f5;
 }
 
-.sales-checkout > div:nth-child(2) {
-  width: min(100%, 230px);
+.sales-checkout > .sales-payment-field {
+  width: min(100%, 190px);
 }
 
 .sales-checkout > .sales-customer-fields {
@@ -820,6 +820,33 @@ form input::placeholder {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   width: min(100%, 460px);
+}
+
+.sales-checkout > .sales-credit-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(22, 163, 74, .16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .72);
+}
+
+.sales-checkout > .sales-credit-fields.hidden {
+  display: none;
+}
+
+.sales-credit-fields label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text, #26352c);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sales-credit-fields input {
+  width: 100%;
 }
 
 .sales-checkout input {
@@ -893,12 +920,16 @@ form input::placeholder {
     flex-direction: column;
   }
 
-  .sales-checkout > div:nth-child(2) {
+  .sales-checkout > .sales-payment-field {
     width: 100%;
   }
 
   .sales-checkout > .sales-customer-fields {
     width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .sales-checkout > .sales-credit-fields {
     grid-template-columns: 1fr;
   }
 

@@ -1281,6 +1281,28 @@ async function loadSalesHistory() {
   });
 }
 
+const salePaymentType = document.getElementById("sale-payment-type");
+const saleCreditFields = document.getElementById("sale-credit-fields");
+const salePaidMethodField = document.getElementById("sale-paid-method-field");
+const saleDepositInput = document.getElementById("sale-credit-deposit");
+const saleDepositMethodField =
+  document.getElementById("sale-credit-deposit-method-field");
+
+function updateSalePaymentFields() {
+  const isCredit = salePaymentType.value === "credit";
+  const hasDeposit = Number(saleDepositInput.value) > 0;
+
+  saleCreditFields.classList.toggle("hidden", !isCredit);
+  salePaidMethodField.classList.toggle("hidden", isCredit);
+  saleDepositMethodField.classList.toggle(
+    "hidden",
+    !isCredit || !hasDeposit
+  );
+}
+
+salePaymentType.addEventListener("change", updateSalePaymentFields);
+saleDepositInput.addEventListener("input", updateSalePaymentFields);
+
 document.getElementById("complete-sale").addEventListener("click", async () => {
   const button = document.getElementById("complete-sale");
 
@@ -1299,35 +1321,90 @@ document.getElementById("complete-sale").addEventListener("click", async () => {
   showMessage("sales-message", "Saving your sale securely...");
 
   try {
-    const paymentMethod =
-      document.getElementById("sale-payment-method").value;
+    const paymentType = salePaymentType.value;
     const customerName =
       document.getElementById("sale-customer-name").value.trim();
     const customerPhone =
       document.getElementById("sale-customer-phone").value.trim();
+    const items = saleCart.map(item => ({
+      product_id: item.product_id,
+      quantity: item.quantity
+    }));
 
-    const { data, error } = await supabaseClient.rpc("record_sale", {
-      p_business_id: currentBusinessRecord.id,
-      p_payment_method: paymentMethod,
-      p_items: saleCart.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity
-      })),
-      p_customer_name: customerName || null,
-      p_customer_phone: customerPhone || null
-    });
+    let data;
+    let error;
+
+    if (paymentType === "credit") {
+      if (!customerName) {
+        throw new Error("Enter the customer's name for a credit sale.");
+      }
+
+      const depositAmount = Number(saleDepositInput.value || 0);
+
+      if (!Number.isFinite(depositAmount) || depositAmount < 0) {
+        throw new Error("Enter a valid deposit amount.");
+      }
+
+      const cartTotal = saleCart.reduce((sum, item) => {
+        const product = availableSaleProducts.find(
+          product => product.id === item.product_id
+        );
+        return sum + (
+          product
+            ? Number(product.selling_price) * Number(item.quantity)
+            : 0
+        );
+      }, 0);
+
+      if (depositAmount > cartTotal) {
+        throw new Error("Deposit cannot exceed the sale total.");
+      }
+
+      ({ data, error } = await supabaseClient.rpc("record_credit_sale", {
+        p_business_id: currentBusinessRecord.id,
+        p_items: items,
+        p_customer_name: customerName,
+        p_customer_phone: customerPhone || null,
+        p_deposit_amount: depositAmount,
+        p_deposit_method:
+          document.getElementById("sale-credit-deposit-method").value,
+        p_due_date:
+          document.getElementById("sale-credit-due-date").value || null
+      }));
+    } else {
+      ({ data, error } = await supabaseClient.rpc("record_sale", {
+        p_business_id: currentBusinessRecord.id,
+        p_payment_method:
+          document.getElementById("sale-payment-method").value,
+        p_items: items,
+        p_customer_name: customerName || null,
+        p_customer_phone: customerPhone || null
+      }));
+    }
 
     if (error) throw error;
 
     saleCart = [];
     document.getElementById("sale-customer-name").value = "";
     document.getElementById("sale-customer-phone").value = "";
+    salePaymentType.value = "paid";
+    saleDepositInput.value = "0";
+    document.getElementById("sale-credit-deposit-method").value = "Cash";
+    document.getElementById("sale-credit-due-date").value = "";
+    updateSalePaymentFields();
     renderSalesCart();
 
-    showMessage(
-      "sales-message",
-      `Sale saved successfully! Total: ${formatKES(data.total_amount)}`
-    );
+    if (paymentType === "credit") {
+      showMessage(
+        "sales-message",
+        `Credit sale recorded! Outstanding balance: ${formatKES(data.outstanding_balance)}`
+      );
+    } else {
+      showMessage(
+        "sales-message",
+        `Sale saved successfully! Total: ${formatKES(data.total_amount)}`
+      );
+    }
 
     await loadProducts();
     await loadSaleProducts();
@@ -1345,6 +1422,8 @@ document.getElementById("complete-sale").addEventListener("click", async () => {
     button.textContent = "Complete Sale";
   }
 });
+
+updateSalePaymentFields();
 
 // ======================================
 // DUKAPULSE EXPENSE MANAGEMENT V1

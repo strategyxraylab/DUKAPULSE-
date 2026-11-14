@@ -539,7 +539,16 @@
                        maxlength="30" placeholder="e.g. 0712345678">
               </div>
             </div>
-            <div>
+
+            <div class="sales-payment-field">
+              <label for="sale-payment-type">Payment type</label>
+              <select id="sale-payment-type">
+                <option value="paid">Paid in full</option>
+                <option value="credit">Credit sale</option>
+              </select>
+            </div>
+
+            <div class="sales-payment-field" id="sale-paid-method-field">
               <label for="sale-payment-method">Payment method</label>
               <select id="sale-payment-method" required>
                 <option value="Cash">Cash</option>
@@ -549,6 +558,29 @@
                 <option value="Other">Other</option>
               </select>
             </div>
+
+            <div id="sale-credit-fields" class="sales-credit-fields hidden">
+              <div>
+                <label for="sale-credit-deposit">Deposit received (KSh)</label>
+                <input id="sale-credit-deposit" type="number"
+                       min="0" step="0.01" value="0" inputmode="decimal">
+              </div>
+              <div id="sale-credit-deposit-method-field">
+                <label for="sale-credit-deposit-method">Deposit payment method</label>
+                <select id="sale-credit-deposit-method">
+                  <option value="Cash">Cash</option>
+                  <option value="M-Pesa">M-Pesa</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank">Bank</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="sale-credit-due-date">Due date (optional)</label>
+                <input id="sale-credit-due-date" type="date">
+              </div>
+            </div>
+
             <div class="sales-total">
               <span>Sale total</span>
               <strong id="sale-total">KSh 0.00</strong>
