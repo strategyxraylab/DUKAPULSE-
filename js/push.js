@@ -55,12 +55,18 @@
 
     let subscription = await registration.pushManager.getSubscription();
 
-    if (!subscription) {
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: decodeVapidKey(VAPID_PUBLIC_KEY)
-      });
+    if (subscription) {
+      const removed = await subscription.unsubscribe();
+      if (!removed) {
+        throw new Error("Could not replace the previous browser subscription.");
+      }
+      subscription = null;
     }
+
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: decodeVapidKey(VAPID_PUBLIC_KEY)
+    });
 
     const subscriptionData = subscription.toJSON();
 
@@ -109,23 +115,15 @@
   }
 
   toggle.addEventListener("change", async () => {
-    if (!toggle.checked) {
-      toggle.checked = true;
-      showMessage(
-        "To disable notifications, use your browser's site notification settings."
-      );
-      return;
-    }
-
     toggle.disabled = true;
-    showMessage("Enabling browser push notifications…");
+    showMessage("Refreshing your browser push subscription…");
 
     try {
       await enablePush();
     } catch (error) {
       console.error("Push subscription error:", error);
       toggle.checked = false;
-      showMessage(error.message || "Could not enable push notifications.", true);
+      showMessage(error.message || "Could not refresh push notifications.", true);
     } finally {
       toggle.disabled = false;
     }
