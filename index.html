@@ -1171,8 +1171,10 @@
         <div><h2>Your Business Data</h2><p>Keep a copy of your business records.</p></div>
       </div>
       <p>Export your business records as a JSON backup file. The export includes products, sales, sale items, expenses, debts and debt payments belonging to your signed-in business.</p>
-      <button type="button" class="primary-button" id="settings-export-button">Export business data</button>
+      <button type="button" class="primary-button" id="settings-export-button">Export business data (JSON)</button>
       <p id="settings-export-message" class="settings-message" role="status"></p>
+      <button type="button" class="primary-button" id="settings-excel-export-button" style="margin-top:12px;">Export Business Report (Excel)</button>
+      <p id="settings-excel-export-message" class="settings-message" role="status"></p>
       <p class="settings-help">Export only downloads a copy. It does not delete or change records in DUKAPULSE.</p>
     </article>
 
@@ -1259,5 +1261,7 @@
   <script src="js/app.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/push.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/excel-export.js"></script>
 </body>
 </html>
