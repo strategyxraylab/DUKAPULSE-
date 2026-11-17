@@ -3465,3 +3465,229 @@ document.getElementById("debt-payment-form").addEventListener("submit", async ev
     button.textContent = "Save payment";
   }
 });
+
+
+// DUKAPULSE SETTINGS UPGRADE V1
+(() => {
+  const byId = id => document.getElementById(id);
+  const lowStockKey = "dukapulse:settings:low-stock-reminders";
+  const themeKey = "dukapulse:theme";
+
+  function setSettingsMessage(id, message, isError = false) {
+    const element = byId(id);
+    if (!element) return;
+    element.textContent = message;
+    element.classList.toggle("is-error", isError);
+  }
+
+  function applyLowStockPreference() {
+    const enabled = localStorage.getItem(lowStockKey) !== "false";
+    const list = byId("dashboard-low-stock-list");
+    const count = byId("dashboard-low-stock-count");
+
+    if (list) {
+      list.hidden = !enabled;
+      list.setAttribute("aria-hidden", String(!enabled));
+    }
+    if (count) {
+      count.hidden = !enabled;
+      count.setAttribute("aria-hidden", String(!enabled));
+    }
+    return enabled;
+  }
+
+  function applyTheme(theme) {
+    const selected = theme === "dark" ? "dark" : "light";
+    document.body.classList.toggle("dark-theme", selected === "dark");
+    localStorage.setItem(themeKey, selected);
+
+    document.querySelectorAll("[data-theme-choice]").forEach(button => {
+      const active = button.dataset.themeChoice === selected;
+      button.classList.toggle("is-selected", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  async function loadAccountEmail() {
+    if (!supabaseClient) return;
+    const { data, error } = await supabaseClient.auth.getUser();
+    const target = byId("settings-account-email");
+    if (!target) return;
+    target.textContent = error ? "Unable to load account email" : (data.user?.email || "Email unavailable");
+  }
+
+  const businessNameInput = byId("settings-business-name");
+  if (businessNameInput) {
+    const observer = new MutationObserver(() => {
+      if (typeof currentBusinessRecord !== "undefined" && currentBusinessRecord) {
+        businessNameInput.value = currentBusinessRecord.business_name || currentBusinessRecord.name || "";
+      }
+    });
+    observer.observe(businessNameInput, { attributes: true, attributeFilter: ["value"] });
+    if (typeof currentBusinessRecord !== "undefined" && currentBusinessRecord) {
+      businessNameInput.value = currentBusinessRecord.business_name || currentBusinessRecord.name || "";
+    }
+  }
+
+  const passwordForm = byId("settings-password-form");
+  if (passwordForm) {
+    passwordForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const password = byId("settings-new-password").value;
+      const confirmation = byId("settings-confirm-password").value;
+
+      if (password.length < 8) {
+        setSettingsMessage("settings-password-message", "Use at least 8 characters.", true);
+        return;
+      }
+      if (password !== confirmation) {
+        setSettingsMessage("settings-password-message", "The passwords do not match.", true);
+        return;
+      }
+      if (!supabaseClient) {
+        setSettingsMessage("settings-password-message", "Account service is unavailable.", true);
+        return;
+      }
+
+      setSettingsMessage("settings-password-message", "Updating your password…");
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if (error) {
+        setSettingsMessage("settings-password-message", error.message, true);
+        return;
+      }
+      passwordForm.reset();
+      setSettingsMessage("settings-password-message", "Password updated successfully.");
+    });
+  }
+
+  const logoutButton = byId("settings-logout-button");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      const existingLogout = byId("logout-button");
+      if (existingLogout) existingLogout.click();
+    });
+  }
+
+  const lowStockToggle = byId("settings-low-stock-toggle");
+  if (lowStockToggle) {
+    lowStockToggle.checked = applyLowStockPreference();
+    lowStockToggle.addEventListener("change", () => {
+      localStorage.setItem(lowStockKey, String(lowStockToggle.checked));
+      applyLowStockPreference();
+      setSettingsMessage(
+        "settings-notification-message",
+        lowStockToggle.checked ? "Low-stock reminders are enabled." : "Low-stock reminders are paused."
+      );
+    });
+  }
+
+  document.querySelectorAll("[data-theme-choice]").forEach(button => {
+    button.addEventListener("click", () => {
+      applyTheme(button.dataset.themeChoice);
+      setSettingsMessage("settings-theme-message", "Appearance preference saved on this device.");
+    });
+  });
+  applyTheme(localStorage.getItem(themeKey) || "light");
+
+  const helpSearch = byId("settings-help-search");
+  if (helpSearch) {
+    helpSearch.addEventListener("input", () => {
+      const query = helpSearch.value.trim().toLowerCase();
+      const articles = [...document.querySelectorAll(".settings-help-article")];
+      let visible = 0;
+      articles.forEach(article => {
+        const matches = !query ||
+          (article.textContent + " " + (article.dataset.helpTerms || "")).toLowerCase().includes(query);
+        article.hidden = !matches;
+        if (matches) visible++;
+      });
+      byId("settings-help-empty").hidden = visible !== 0;
+    });
+  }
+
+  const exportButton = byId("settings-export-button");
+  if (exportButton) {
+    exportButton.addEventListener("click", async () => {
+      if (!supabaseClient || typeof currentBusinessRecord === "undefined" ||
+          !currentBusinessRecord?.id) {
+        setSettingsMessage("settings-export-message", "Your business is not ready. Please try again after loading your dashboard.", true);
+        return;
+      }
+      if (typeof fetchAllRows !== "function") {
+        setSettingsMessage("settings-export-message", "The data export service is unavailable.", true);
+        return;
+      }
+
+      exportButton.disabled = true;
+      setSettingsMessage("settings-export-message", "Preparing your business backup…");
+
+      try {
+        const businessId = currentBusinessRecord.id;
+        const tables = ["products", "sales", "expenses", "debts", "debt_payments"];
+        const exported = {};
+
+        for (const table of tables) {
+          exported[table] = await fetchAllRows(() =>
+            supabaseClient.from(table).select("*")
+              .eq("business_id", businessId)
+              .order("id", { ascending: true })
+          );
+        }
+
+        const saleIds = exported.sales.map(sale => sale.id).filter(Boolean);
+        exported.sale_items = [];
+
+        for (let index = 0; index < saleIds.length; index += 100) {
+          const batchIds = saleIds.slice(index, index + 100);
+          const batch = await fetchAllRows(() =>
+            supabaseClient.from("sale_items").select("*")
+              .in("sale_id", batchIds)
+              .order("id", { ascending: true })
+          );
+          exported.sale_items.push(...batch);
+        }
+
+        const backup = {
+          application: "DUKAPULSE",
+          exported_at: new Date().toISOString(),
+          business: currentBusinessRecord,
+          data: exported
+        };
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], {
+          type: "application/json"
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0, 10);
+        link.href = url;
+        link.download = `dukapulse-backup-${date}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+
+        setSettingsMessage("Your business backup has been prepared and downloaded.");
+      } catch (error) {
+        console.error("Business data export failed:", error);
+        setSettingsMessage("Export failed: " + (error.message || "Please try again."), true);
+      } finally {
+        exportButton.disabled = false;
+      }
+    });
+  }
+
+  loadAccountEmail();
+  applyLowStockPreference();
+
+  // Keep the dashboard reminder preference applied after its content refreshes.
+  const lowStockList = byId("dashboard-low-stock-list");
+  if (lowStockList && window.MutationObserver) {
+    new MutationObserver(() => {
+      if (localStorage.getItem(lowStockKey) === "false") {
+        lowStockList.hidden = true;
+        lowStockList.setAttribute("aria-hidden", "true");
+      }
+    }).observe(lowStockList, { childList: true, subtree: true });
+  }
+})();

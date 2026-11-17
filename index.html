@@ -1080,83 +1080,164 @@
       </section>
 
 
-      <section id="settings-view" class="workspace-section hidden">
-        <div class="settings-heading">
-          <div>
-            <span class="eyebrow green">PERSONALISE YOUR WORKSPACE</span>
-            <h1>Settings</h1>
-            <p>Manage your business profile and DUKAPULSE preferences.</p>
-          </div>
-          <button class="history-reset-button" type="button" data-section="dashboard-home">
-            Back to overview
-          </button>
+
+<section id="settings-view" class="workspace-section hidden">
+  <!-- DUKAPULSE SETTINGS UPGRADE V1 -->
+  <div class="settings-heading">
+    <div>
+      <span class="settings-eyebrow">YOUR WORKSPACE</span>
+      <h1>Settings</h1>
+      <p>Manage your business, account, preferences and support.</p>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+
+    <article class="settings-card settings-profile-card" id="settings-profile">
+      <div class="settings-card-heading">
+        <span class="settings-card-icon">▣</span>
+        <div><h2>Business Profile</h2><p>Manage the identity of your business.</p></div>
+      </div>
+      <form id="settings-business-form">
+        <label for="settings-business-name">Business name</label>
+        <input id="settings-business-name" type="text" maxlength="100"
+          placeholder="Enter your business name" required>
+        <p class="settings-help">This name identifies your business in DUKAPULSE.</p>
+        <button type="submit" class="primary-button" id="save-business-name">Save business name</button>
+        <p id="settings-business-message" class="settings-message" role="status"></p>
+      </form>
+    </article>
+
+    <article class="settings-card" id="settings-security">
+      <div class="settings-card-heading">
+        <span class="settings-card-icon">♙</span>
+        <div><h2>Account &amp; Security</h2><p>Protect your account and sign-in access.</p></div>
+      </div>
+      <div class="settings-info-row">
+        <span>Signed-in email</span>
+        <strong id="settings-account-email">Loading…</strong>
+      </div>
+      <form id="settings-password-form">
+        <label for="settings-new-password">New password</label>
+        <input id="settings-new-password" type="password" minlength="8"
+          autocomplete="new-password" placeholder="At least 8 characters" required>
+        <label for="settings-confirm-password">Confirm new password</label>
+        <input id="settings-confirm-password" type="password"
+          autocomplete="new-password" placeholder="Enter password again" required>
+        <button type="submit" class="primary-button">Update password</button>
+        <p id="settings-password-message" class="settings-message" role="status"></p>
+      </form>
+      <button type="button" class="settings-secondary-button" id="settings-logout-button">
+        Sign out of this account
+      </button>
+    </article>
+
+    <article class="settings-card" id="settings-notifications">
+      <div class="settings-card-heading">
+        <span class="settings-card-icon">♢</span>
+        <div><h2>Notifications</h2><p>Choose whether stock reminders appear on your dashboard.</p></div>
+      </div>
+      <label class="settings-switch-row" for="settings-low-stock-toggle">
+        <span><strong>Low-stock reminders</strong><small>Show or pause the dashboard low-stock reminder.</small></span>
+        <input id="settings-low-stock-toggle" type="checkbox">
+      </label>
+      <p id="settings-notification-message" class="settings-message" role="status"></p>
+      <p class="settings-help">This controls the in-app dashboard reminder. It does not enable browser push notifications or SMS alerts.</p>
+    </article>
+
+    <article class="settings-card" id="settings-appearance">
+      <div class="settings-card-heading">
+        <span class="settings-card-icon">◐</span>
+        <div><h2>Display Preferences</h2><p>Choose the appearance that feels comfortable.</p></div>
+      </div>
+      <div class="settings-theme-options" role="group" aria-label="Choose appearance">
+        <button type="button" class="settings-theme-button" data-theme-choice="light">☀ Light</button>
+        <button type="button" class="settings-theme-button" data-theme-choice="dark">☾ Dark</button>
+      </div>
+      <p id="settings-theme-message" class="settings-message" role="status">Your choice is saved on this device.</p>
+    </article>
+
+    <article class="settings-card" id="settings-data">
+      <div class="settings-card-heading">
+        <span class="settings-card-icon">▤</span>
+        <div><h2>Your Business Data</h2><p>Keep a copy of your business records.</p></div>
+      </div>
+      <p>Export your business records as a JSON backup file. The export includes products, sales, sale items, expenses, debts and debt payments belonging to your signed-in business.</p>
+      <button type="button" class="primary-button" id="settings-export-button">Export business data</button>
+      <p id="settings-export-message" class="settings-message" role="status"></p>
+      <p class="settings-help">Export only downloads a copy. It does not delete or change records in DUKAPULSE.</p>
+    </article>
+
+    <article class="settings-card" id="settings-about">
+      <div class="settings-card-heading">
+        <span class="settings-card-icon">ⓘ</span>
+        <div><h2>About DUKAPULSE</h2><p>Your business management workspace.</p></div>
+      </div>
+      <div class="settings-about-brand">DUKAPULSE</div>
+      <p>Know your stock. Control your money.</p>
+      <p>DUKAPULSE helps small businesses manage sales, inventory, expenses, profit, reports and customer debts in one place.</p>
+      <div class="settings-feature-tags">
+        <span>Sales</span><span>Stock</span><span>Expenses</span>
+        <span>Reports</span><span>Debts</span>
+      </div>
+    </article>
+
+    <article class="settings-card settings-help-card" id="settings-help">
+      <div class="settings-card-heading">
+        <span class="settings-card-icon">?</span>
+        <div><h2>Help Center</h2><p>Find answers and learn how to use DUKAPULSE.</p></div>
+      </div>
+      <label for="settings-help-search">Search help articles</label>
+      <input id="settings-help-search" type="search"
+        placeholder="Try sales, stock, expenses or debts">
+      <div id="settings-help-articles">
+        <details class="settings-help-article" data-help-terms="getting started setup business account">
+          <summary>Getting started with DUKAPULSE</summary>
+          <p>Sign in to your account and open your business workspace. Start by adding your products with their names, quantities, cost prices and selling prices. Then record sales and expenses as your business operates.</p>
+        </details>
+        <details class="settings-help-article" data-help-terms="sales record sale payment">
+          <summary>How do I record a sale?</summary>
+          <p>Open the Sales area, select the products and quantities sold, choose the payment method and complete the sale. Check the sale summary before confirming. Recorded sales help update your stock and business performance figures.</p>
+        </details>
+        <details class="settings-help-article" data-help-terms="expenses costs spending">
+          <summary>How do I record business expenses?</summary>
+          <p>Open Expenses, enter a clear description, choose a category, enter the amount and select the date. Save the record so it can be included in your expense history and profit calculations.</p>
+        </details>
+        <details class="settings-help-article" data-help-terms="inventory products stock restock">
+          <summary>How do I manage stock and restocking?</summary>
+          <p>Add products in Inventory and keep their quantities and prices accurate. When new stock arrives, use the available restocking feature. Set a low-stock threshold so the dashboard can highlight products that need attention.</p>
+        </details>
+        <details class="settings-help-article" data-help-terms="profit reports analytics business intelligence">
+          <summary>Where can I see profit and reports?</summary>
+          <p>Open Dashboard Analytics, Reports or Business Intelligence to review business performance. Profit calculations depend on the sales, product costs and expenses you have recorded. Keep records accurate for more useful results.</p>
+        </details>
+        <details class="settings-help-article" data-help-terms="debts credit customers payments">
+          <summary>How do I manage customer debts?</summary>
+          <p>Use the Debts area to record customer balances and due dates. When a customer pays, record the payment against the correct debt. DUKAPULSE uses recorded payments to calculate the remaining balance.</p>
+        </details>
+        <details class="settings-help-article" data-help-terms="password login account security">
+          <summary>What if I cannot access my account?</summary>
+          <p>Check that you are using the correct sign-in email. If you have forgotten your password, use the password recovery option on the login screen. You can also contact support for assistance.</p>
+        </details>
+        <details class="settings-help-article" data-help-terms="subscription billing payment mpesa">
+          <summary>Subscription and payment assistance</summary>
+          <p>If you have a question about your trial, subscription or payment, contact support before making another payment. Never share your M-PESA PIN, password or one-time security codes with anyone.</p>
+        </details>
+      </div>
+      <p id="settings-help-empty" class="settings-help-empty" hidden>No matching help articles. Try another search term.</p>
+      <div class="settings-support">
+        <strong>Still need help?</strong>
+        <p>Contact DUKAPULSE support by phone or WhatsApp.</p>
+        <div class="settings-support-actions">
+          <a href="tel:0716397341">Call 0716397341</a>
+          <a href="https://wa.me/254716397341?text=Hello%20DUKAPULSE%20Support%2C%20I%20need%20help." target="_blank" rel="noopener noreferrer">WhatsApp Support</a>
         </div>
+      </div>
+    </article>
 
-        <div class="settings-grid">
-          <article class="settings-card settings-profile-card">
-            <span class="settings-card-icon">▣</span>
-            <span class="eyebrow green">BUSINESS PROFILE</span>
-            <h2>Business name</h2>
-            <p>Update the name displayed across your business workspace.</p>
+  </div>
+</section>
 
-            <form id="settings-business-form">
-              <label for="settings-business-name">Business name</label>
-              <input
-                id="settings-business-name"
-                name="business_name"
-                type="text"
-                maxlength="80"
-                placeholder="Enter your business name"
-                required
-              >
-              <button class="primary-button" id="save-business-name" type="submit">
-                Save business name
-              </button>
-              <p id="settings-business-message" role="status"></p>
-            </form>
-          </article>
-
-          <article class="settings-card">
-            <span class="settings-card-icon">♙</span>
-            <span class="eyebrow green">ACCOUNT & SECURITY</span>
-            <h2>Account security</h2>
-            <p>Password and account-management options.</p>
-            <span class="settings-coming-soon">More options coming soon</span>
-          </article>
-
-          <article class="settings-card">
-            <span class="settings-card-icon">♢</span>
-            <span class="eyebrow green">NOTIFICATIONS</span>
-            <h2>Notifications</h2>
-            <p>Preferences for business updates and reminders.</p>
-            <span class="settings-coming-soon">More options coming soon</span>
-          </article>
-
-          <article class="settings-card">
-            <span class="settings-card-icon">◐</span>
-            <span class="eyebrow green">APPEARANCE</span>
-            <h2>Display preferences</h2>
-            <p>Workspace appearance and display options.</p>
-            <span class="settings-coming-soon">More options coming soon</span>
-          </article>
-
-          <article class="settings-card">
-            <span class="settings-card-icon">▤</span>
-            <span class="eyebrow green">DATA & BACKUP</span>
-            <h2>Your business data</h2>
-            <p>Data management and backup options.</p>
-            <span class="settings-coming-soon">More options coming soon</span>
-          </article>
-
-          <article class="settings-card">
-            <span class="settings-card-icon">ⓘ</span>
-            <span class="eyebrow green">ABOUT DUKAPULSE</span>
-            <h2>About the app</h2>
-            <p>Business tools designed to help you stay in control.</p>
-            <span class="settings-coming-soon">DUKAPULSE</span>
-          </article>
-        </div>
-      </section>
 
     </main>
 
