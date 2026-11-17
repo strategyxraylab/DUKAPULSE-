@@ -125,6 +125,47 @@ function showMessage(id, message) {
 let currentUser = null;
 let currentBusinessRecord = null;
 
+// Retrieve every matching Supabase row in stable, manageable pages.
+async function fetchAllRows(makeQuery, pageSize = 1000) {
+  const rows = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await makeQuery()
+      .range(offset, offset + pageSize - 1);
+
+    if (error) throw error;
+
+    const page = data || [];
+    rows.push(...page);
+
+    if (page.length < pageSize) break;
+    offset += pageSize;
+  }
+
+  return rows;
+}
+
+// Retrieve sale items without oversized ID filters or response pages.
+async function fetchSaleItemsInBatches(saleIds, selectFields) {
+  const items = [];
+
+  for (let i = 0; i < saleIds.length; i += 100) {
+    const batchIds = saleIds.slice(i, i + 100);
+
+    const batch = await fetchAllRows(() => supabaseClient
+      .from("sale_items")
+      .select(selectFields)
+      .in("sale_id", batchIds)
+      .order("id", { ascending: true }));
+
+    items.push(...batch);
+  }
+
+  return items;
+}
+
+
 function showWorkspaceSection(sectionId) {
   document.querySelectorAll(".workspace-section").forEach(section => {
     section.classList.toggle("hidden", section.id !== sectionId);
@@ -1752,40 +1793,32 @@ async function loadReports() {
     const startISO = reportDateToISO(startDate);
     const endISO = reportDateToISO(reportNextDate(endDate));
 
-    const [salesResult, expensesResult] = await Promise.all([
-      supabaseClient
+    const [sales, expenses] = await Promise.all([
+      fetchAllRows(() => supabaseClient
         .from("sales")
         .select("id, total_amount, sold_at")
         .eq("business_id", currentBusinessRecord.id)
         .gte("sold_at", startISO)
-        .lt("sold_at", endISO),
+        .lt("sold_at", endISO)
+        .order("sold_at", { ascending: true })
+        .order("id", { ascending: true })),
 
-      supabaseClient
+      fetchAllRows(() => supabaseClient
         .from("expenses")
-        .select("category, amount, spent_at")
+        .select("id, category, amount, spent_at")
         .eq("business_id", currentBusinessRecord.id)
         .gte("spent_at", startISO)
         .lt("spent_at", endISO)
+        .order("spent_at", { ascending: true })
+        .order("id", { ascending: true }))
     ]);
 
-    if (salesResult.error) throw salesResult.error;
-    if (expensesResult.error) throw expensesResult.error;
-
-    const sales = salesResult.data || [];
-    const expenses = expensesResult.data || [];
     const saleIds = sales.map(sale => sale.id);
 
-    let saleItems = [];
-
-    if (saleIds.length > 0) {
-      const itemsResult = await supabaseClient
-        .from("sale_items")
-        .select("sale_id, quantity, unit_cost_price")
-        .in("sale_id", saleIds);
-
-      if (itemsResult.error) throw itemsResult.error;
-      saleItems = itemsResult.data || [];
-    }
+    const saleItems = await fetchSaleItemsInBatches(
+      saleIds,
+      "id, sale_id, quantity, unit_cost_price"
+    );
 
     const revenue = sales.reduce(
       (sum, sale) => sum + Number(sale.total_amount || 0), 0
@@ -1913,35 +1946,32 @@ async function loadDashboardAnalytics() {
   const stockElement = document.getElementById("dashboard-low-stock-list");
 
   try {
-    const [salesResult, expensesResult, productsResult] = await Promise.all([
-      supabaseClient
+    const [sales, expenses, products] = await Promise.all([
+      fetchAllRows(() => supabaseClient
         .from("sales")
         .select("id, total_amount, sold_at")
         .eq("business_id", currentBusinessRecord.id)
         .gte("sold_at", startISO)
-        .lt("sold_at", endISO),
+        .lt("sold_at", endISO)
+        .order("sold_at", { ascending: true })
+        .order("id", { ascending: true })),
 
-      supabaseClient
+      fetchAllRows(() => supabaseClient
         .from("expenses")
-        .select("description, category, amount, spent_at")
+        .select("id, description, category, amount, spent_at")
         .eq("business_id", currentBusinessRecord.id)
         .gte("spent_at", startISO)
-        .lt("spent_at", endISO),
+        .lt("spent_at", endISO)
+        .order("spent_at", { ascending: true })
+        .order("id", { ascending: true })),
 
-      supabaseClient
+      fetchAllRows(() => supabaseClient
         .from("products")
-        .select("product_name, quantity, low_stock_threshold")
+        .select("id, product_name, quantity, low_stock_threshold")
         .eq("business_id", currentBusinessRecord.id)
         .order("product_name", { ascending: true })
+        .order("id", { ascending: true }))
     ]);
-
-    if (salesResult.error) throw salesResult.error;
-    if (expensesResult.error) throw expensesResult.error;
-    if (productsResult.error) throw productsResult.error;
-
-    const sales = salesResult.data || [];
-    const expenses = expensesResult.data || [];
-    const products = productsResult.data || [];
 
     const todaysSales = sales.filter(
       sale => localDateString(new Date(sale.sold_at)) === today
@@ -1971,14 +2001,12 @@ async function loadDashboardAnalytics() {
     const saleIds = todaysSales.map(sale => sale.id);
 
     if (saleIds.length > 0) {
-      const itemsResult = await supabaseClient
-        .from("sale_items")
-        .select("quantity, unit_cost_price")
-        .in("sale_id", saleIds);
+      const todayItems = await fetchSaleItemsInBatches(
+        saleIds,
+        "id, quantity, unit_cost_price"
+      );
 
-      if (itemsResult.error) throw itemsResult.error;
-
-      todayCOGS = (itemsResult.data || []).reduce(
+      todayCOGS = todayItems.reduce(
         (sum, item) =>
           sum + Number(item.quantity || 0) *
           Number(item.unit_cost_price || 0), 0
@@ -2163,27 +2191,7 @@ async function loadBusinessIntelligence() {
   const sum = (items, field) =>
     items.reduce((total, item) => total + Number(item[field] || 0), 0);
 
-  // Fetch every page instead of silently stopping at Supabase's row limit.
-  async function fetchAllRows(makeQuery) {
-    const rows = [];
-    let offset = 0;
-    const pageSize = 1000;
 
-    while (true) {
-      const { data, error } = await makeQuery()
-        .range(offset, offset + pageSize - 1);
-
-      if (error) throw error;
-
-      const page = data || [];
-      rows.push(...page);
-
-      if (page.length < pageSize) break;
-      offset += pageSize;
-    }
-
-    return rows;
-  }
 
   try {
     const startISO = historyStart.toISOString();
@@ -2194,37 +2202,32 @@ async function loadBusinessIntelligence() {
         .select("id, total_amount, sold_at")
         .eq("business_id", businessId)
         .gte("sold_at", startISO)
-        .order("sold_at", { ascending: true })),
+        .order("sold_at", { ascending: true })
+        .order("id", { ascending: true })),
 
       fetchAllRows(() => supabaseClient
         .from("expenses")
-        .select("category, amount, spent_at")
+        .select("id, category, amount, spent_at")
         .eq("business_id", businessId)
         .gte("spent_at", startISO)
-        .order("spent_at", { ascending: true })),
+        .order("spent_at", { ascending: true })
+        .order("id", { ascending: true })),
 
       fetchAllRows(() => supabaseClient
         .from("products")
         .select("id, product_name, category, quantity, low_stock_threshold")
         .eq("business_id", businessId)
-        .order("product_name", { ascending: true }))
+        .order("product_name", { ascending: true })
+        .order("id", { ascending: true }))
     ]);
 
-    // Retrieve sale items in manageable batches.
-    const saleItems = [];
+    // Retrieve all sale items through the shared batched pagination helper.
     const saleIds = sales.map(sale => sale.id);
 
-    for (let i = 0; i < saleIds.length; i += 100) {
-      const batchIds = saleIds.slice(i, i + 100);
-
-      const batch = await fetchAllRows(() => supabaseClient
-        .from("sale_items")
-        .select("id, sale_id, product_id, product_name, quantity, unit_selling_price, unit_cost_price, line_total")
-        .in("sale_id", batchIds)
-        .order("id", { ascending: true }));
-
-      saleItems.push(...batch);
-    }
+    const saleItems = await fetchSaleItemsInBatches(
+      saleIds,
+      "id, sale_id, product_id, product_name, quantity, unit_selling_price, unit_cost_price, line_total"
+    );
 
     const operatingExpenses = expenses.filter(
       item => item.category !== "Stock Purchase"
