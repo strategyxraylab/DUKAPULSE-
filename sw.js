@@ -1,10 +1,9 @@
 /*
   DUKAPULSE service worker.
-  Caches the application shell only.
-  Supabase and other external services remain network-dependent.
+  Offline application shell and Web Push notifications.
 */
 
-const CACHE_NAME = "dukapulse-shell-v10";
+const CACHE_NAME = "dukapulse-shell-v11";
 
 const APP_FILES = [
   "index.html",
@@ -54,7 +53,6 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
-  // Do not intercept Supabase, CDN or other external requests.
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
@@ -81,4 +79,75 @@ self.addEventListener("fetch", (event) => {
       });
     })
   );
+});
+
+// Receive Web Push notifications.
+self.addEventListener("push", (event) => {
+  let data = {};
+
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {
+      body: event.data ? event.data.text() : "You have a new alert."
+    };
+  }
+
+  const title = data.title || "DUKAPULSE Alerts";
+
+  const options = {
+    body: data.body || "You have a new stock alert.",
+    icon: "./icons/icon-192.png",
+    badge: "./icons/icon-192.png",
+    tag: data.tag || "dukapulse-alert",
+    data: {
+      url: data.url || "./"
+    },
+    vibrate: [200, 100, 200]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Open DUKAPULSE when a notification is tapped.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  event.waitUntil((async () => {
+    let target;
+
+    try {
+      target = new URL(
+        event.notification.data?.url || "./",
+        self.registration.scope
+      );
+
+      if (target.origin !== self.location.origin) {
+        target = new URL("./", self.registration.scope);
+      }
+    } catch {
+      target = new URL("./", self.registration.scope);
+    }
+
+    const windows = await self.clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    });
+
+    for (const client of windows) {
+      if (new URL(client.url).origin === self.location.origin) {
+        await client.focus();
+
+        if (client.navigate) {
+          await client.navigate(target.href);
+        }
+
+        return;
+      }
+    }
+
+    await self.clients.openWindow(target.href);
+  })());
 });
