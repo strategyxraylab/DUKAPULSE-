@@ -3,7 +3,7 @@
   Offline application shell and Web Push notifications.
 */
 
-const CACHE_NAME = "dukapulse-shell-v11";
+const CACHE_NAME = "dukapulse-shell-v12";
 
 const APP_FILES = [
   "index.html",
@@ -11,6 +11,8 @@ const APP_FILES = [
   "js/app.js",
   "js/launch.js",
   "js/pwa.js",
+  "js/push.js",
+  "js/excel-export.js",
   "manifest.webmanifest",
   "icons/icon-192.png",
   "icons/icon-512.png"
