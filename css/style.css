@@ -4152,3 +4152,53 @@ body.dark-theme .settings-card-icon { color: #a5e2b9; background: #20392b; }
   .settings-support-actions { flex-direction: column; }
   .settings-support-actions a { width: 100%; box-sizing: border-box; }
 }
+
+/* ==========================================
+   DUKAPULSE — CENTERED PROFESSIONAL LAUNCH
+========================================== */
+
+.launch-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px 18px;
+  box-sizing: border-box;
+}
+
+.launch-content {
+  position: relative;
+  width: min(86%, 360px);
+  margin: 0 auto;
+  align-self: center;
+  justify-content: center;
+  transform: none;
+}
+
+.launch-loader {
+  margin-top: 38px;
+}
+
+.launch-bottom,
+.launch-particles {
+  display: none !important;
+}
+
+@media (max-height: 600px) {
+  .launch-orbit {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 20px;
+  }
+
+  .launch-logo {
+    width: 64px;
+    height: 64px;
+    font-size: 40px;
+  }
+
+  .launch-loader {
+    margin-top: 24px;
+  }
+}
