@@ -4202,3 +4202,286 @@ body.dark-theme .settings-card-icon { color: #a5e2b9; background: #20392b; }
     margin-top: 24px;
   }
 }
+
+
+/* ==========================================
+   DUKAPULSE — EMERALD RETAIL LOGIN V4
+========================================== */
+
+.auth-layout {
+  background: #020d09;
+  color: #f3fff8;
+}
+
+.brand-panel {
+  background:
+    linear-gradient(180deg, rgba(0,12,7,.18) 0%, rgba(0,12,7,.12) 42%, rgba(0,12,7,.86) 100%),
+    url("../assets/images/dukapulse-retail-showcase.jpg") center bottom / 100% auto no-repeat,
+    radial-gradient(ellipse at 20% 25%, #087b48, #03150d 72%);
+  border-right: 1px solid rgba(0,255,145,.25);
+}
+
+.brand-panel::before,
+.brand-panel::after {
+  border-color: rgba(0,255,145,.18);
+}
+
+.brand-icon,
+.mobile-brand .brand-icon {
+  background: linear-gradient(145deg,#54ffc1,#00a96b);
+  color: #032116;
+  border: 1px solid rgba(190,255,224,.55);
+  box-shadow: 0 0 28px rgba(0,255,145,.4);
+}
+
+.brand-message .eyebrow {
+  display: inline-block;
+  padding: 11px 18px;
+  border: 1px solid rgba(0,255,145,.5);
+  border-radius: 30px;
+  background: rgba(0,190,105,.2);
+  color: #37ffc0;
+}
+
+.brand-message h1 {
+  color: #f4fff8;
+  text-shadow: 0 4px 28px rgba(0,0,0,.5);
+}
+
+.brand-message h1::first-line {
+  color: #ffffff;
+}
+
+.brand-message p {
+  color: #d0e8da;
+}
+
+.feature-list {
+  color: #f0fff6;
+  text-shadow: 0 2px 12px #001b0e;
+}
+
+.brand-footer {
+  color: #c4f8dc;
+  text-shadow: 0 2px 12px #001b0e;
+}
+
+.form-panel {
+  background:
+    radial-gradient(ellipse at 50% 15%,rgba(0,220,125,.19),transparent 48%),
+    radial-gradient(ellipse at 100% 100%,rgba(0,120,75,.13),transparent 50%),
+    #020d0b;
+}
+
+.auth-card {
+  max-width: 530px;
+  padding: clamp(28px,4vw,48px);
+  border: 1px solid rgba(43,255,165,.58);
+  border-radius: 27px;
+  background: linear-gradient(145deg,rgba(5,43,29,.96),rgba(3,19,17,.98));
+  box-shadow:
+    0 0 0 1px rgba(0,255,145,.08),
+    0 0 48px rgba(0,255,145,.15),
+    0 30px 90px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+.auth-card::before {
+  height: 2px;
+  background: linear-gradient(90deg,transparent,#00ff9d,#b0ffe0,#00ff9d,transparent);
+}
+
+#login-view::before {
+  content: "D";
+  display: grid;
+  place-items: center;
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 20px;
+  border: 2px solid rgba(91,255,183,.85);
+  border-radius: 20px;
+  background: linear-gradient(145deg,#4dffc0,#00a967);
+  color: #032116;
+  font-family: 'Manrope',sans-serif;
+  font-size: 42px;
+  font-weight: 900;
+  box-shadow: 0 0 18px rgba(0,255,145,.65),0 0 42px rgba(0,255,145,.28);
+}
+
+#login-view > .eyebrow,
+#login-view > h2,
+#login-view > .subheading {
+  display: block;
+  text-align: center;
+}
+
+.auth-card h2 {
+  color: #f4fff8;
+}
+
+.auth-card .eyebrow {
+  color: #32ffc0;
+}
+
+.subheading {
+  color: #bdd3c7;
+}
+
+.auth-card form label {
+  color: #e4fff0;
+}
+
+.auth-card form input {
+  height: 56px;
+  border: 1px solid rgba(73,210,147,.48);
+  border-radius: 13px;
+  background: rgba(0,10,9,.78);
+  color: #f3fff8;
+}
+
+.auth-card form input::placeholder {
+  color: #91aa9b;
+}
+
+.auth-card form input:focus {
+  border-color: #00efa0;
+  box-shadow: 0 0 0 3px rgba(0,255,145,.15),0 0 24px rgba(0,255,145,.12);
+}
+
+.text-button,
+.forgot-button,
+.switch-text button {
+  color: #31ffc0;
+}
+
+.primary-button {
+  min-height: 58px;
+  border: 1px solid rgba(164,255,208,.55);
+  border-radius: 14px;
+  background: linear-gradient(105deg,#00a968,#00ed91 65%,#00bd81);
+  color: #002516;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 8px 30px rgba(0,255,145,.25);
+}
+
+.primary-button:hover {
+  background: linear-gradient(105deg,#00c77b,#43ffad);
+  box-shadow: 0 10px 38px rgba(0,255,145,.36);
+}
+
+.switch-text {
+  text-align: center;
+  color: #b6cec0;
+}
+
+.switch-text button {
+  padding: 8px 14px;
+  border: 1px solid rgba(0,255,145,.65);
+  border-radius: 30px;
+  background: rgba(0,255,145,.06);
+}
+
+.form-footer {
+  color: #8da99a;
+  text-align: center;
+}
+
+.mobile-showcase {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .auth-layout {
+    display: block;
+    min-height: 100vh;
+    min-height: 100svh;
+    background: #020d0b;
+  }
+
+  .brand-panel {
+    display: none !important;
+  }
+
+  .form-panel {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 23px 18px 30px;
+    justify-content: flex-start;
+    background:
+      radial-gradient(ellipse at 50% 0%,rgba(0,230,130,.2),transparent 45%),
+      #020d0b;
+  }
+
+  .mobile-brand {
+    display: flex;
+    max-width: 530px;
+    margin: 0 auto 17px;
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .mobile-showcase {
+    display: block;
+    width: 100%;
+    max-width: 530px;
+    height: clamp(125px,24vw,175px);
+    margin: 0 auto 20px;
+    overflow: hidden;
+    border: 1px solid rgba(0,255,145,.5);
+    border-radius: 17px;
+    box-shadow: 0 0 26px rgba(0,255,145,.16);
+  }
+
+  .mobile-showcase img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 57%;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 530px;
+    margin: 0 auto;
+    padding: 25px 22px;
+    border-radius: 23px;
+  }
+
+  #login-view::before {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 16px;
+    font-size: 35px;
+  }
+
+  .auth-card h2 {
+    font-size: 31px;
+  }
+
+  .auth-card form input {
+    height: 53px;
+  }
+
+  .form-footer {
+    margin-top: 19px;
+  }
+}
+
+@media (max-width: 380px) {
+  .form-panel {
+    padding: 18px 13px 24px;
+  }
+
+  .mobile-showcase {
+    height: 116px;
+    margin-bottom: 16px;
+  }
+
+  .auth-card {
+    padding: 22px 17px;
+  }
+}

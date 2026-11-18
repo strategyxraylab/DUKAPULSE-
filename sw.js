@@ -3,7 +3,7 @@
   Offline application shell and Web Push notifications.
 */
 
-const CACHE_NAME = "dukapulse-shell-v13";
+const CACHE_NAME = "dukapulse-shell-v14";
 
 const APP_FILES = [
   "index.html",
@@ -15,7 +15,8 @@ const APP_FILES = [
   "js/excel-export.js",
   "manifest.webmanifest",
   "icons/icon-192.png",
-  "icons/icon-512.png"
+  "icons/icon-512.png",
+  "assets/images/dukapulse-retail-showcase.jpg",
 ];
 
 const INDEX_URL = new URL("index.html", self.registration.scope).href;
