@@ -3,7 +3,7 @@
   Offline application shell and Web Push notifications.
 */
 
-const CACHE_NAME = "dukapulse-shell-v12";
+const CACHE_NAME = "dukapulse-shell-v13";
 
 const APP_FILES = [
   "index.html",
