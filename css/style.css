@@ -4930,3 +4930,83 @@ canvas {
     transform: none !important;
   }
 }
+
+/* ==========================================
+   DUKAPULSE — DARK MODE READABILITY FIX
+   Settings menu and sales history
+========================================== */
+
+body.dark-theme .settings-menu {
+  background: rgba(19, 29, 23, .98);
+  border-color: #34483a;
+  color: #edf5ef;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, .4);
+}
+
+body.dark-theme .settings-menu button {
+  color: #edf5ef;
+}
+
+body.dark-theme .settings-menu button:hover {
+  background: #20392b;
+  color: #a5e2b9;
+}
+
+body.dark-theme .settings-coming-soon {
+  background: #20392b;
+  border-color: #405447;
+  color: #c5d8cb;
+}
+
+body.dark-theme .history-filter-panel {
+  background: #17231b;
+  border-color: #34483a;
+  color: #edf5ef;
+}
+
+body.dark-theme .history-filter-grid label {
+  color: #dce9df;
+}
+
+body.dark-theme .history-filter-grid input,
+body.dark-theme .history-filter-grid select {
+  background: #101a14;
+  border-color: #405447;
+  color: #edf5ef;
+  color-scheme: dark;
+}
+
+body.dark-theme .history-filter-grid input::placeholder {
+  color: #9aaca0;
+}
+
+body.dark-theme .history-filter-grid select option {
+  background: #17231b;
+  color: #edf5ef;
+}
+
+body.dark-theme .history-reset-button,
+body.dark-theme .history-page-button {
+  background: #20392b;
+  border-color: #405447;
+  color: #edf5ef;
+}
+
+body.dark-theme .history-receipt-button {
+  border-color: #405447;
+  color: #a5e2b9;
+}
+
+body.dark-theme .history-results-heading,
+body.dark-theme .history-results-heading h3 {
+  color: #edf5ef;
+}
+
+body.dark-theme .history-results-heading p,
+body.dark-theme .history-pagination span {
+  color: #b5c5ba;
+}
+
+body.dark-theme .history-page-button:disabled {
+  color: #87988c;
+}
