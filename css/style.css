@@ -4872,3 +4872,61 @@ canvas {
     transition: none !important;
   }
 }
+
+
+/* ==============================================
+   DUKAPULSE NAVIGATION MOTION V1
+============================================== */
+
+/* Smooth active navigation feedback */
+.dashboard-nav .nav-link {
+  position: relative;
+  transition:
+    background-color .22s ease,
+    color .22s ease,
+    box-shadow .22s ease,
+    transform .22s ease;
+}
+
+.dashboard-nav .nav-link:hover {
+  transform: translateY(-1px);
+}
+
+.dashboard-nav .nav-link.active {
+  box-shadow: inset 0 -2px 0 var(--green);
+}
+
+/* Animate only sections that are actually visible */
+.workspace-section:not(.hidden) {
+  animation: dukapulseSectionEnter .28s ease-out both;
+}
+
+@keyframes dukapulseSectionEnter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessible keyboard focus */
+.dashboard-nav .nav-link:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+/* Avoid motion when the user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .workspace-section:not(.hidden) {
+    animation: none !important;
+  }
+
+  .dashboard-nav .nav-link {
+    transition: none !important;
+    transform: none !important;
+  }
+}
