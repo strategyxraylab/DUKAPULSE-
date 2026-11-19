@@ -5010,3 +5010,64 @@ body.dark-theme .history-pagination span {
 body.dark-theme .history-page-button:disabled {
   color: #87988c;
 }
+
+
+/* ==========================================
+   DUKAPULSE — SALES HISTORY DARK MODE V2
+   Scoped to Sales History only
+========================================== */
+
+body.dark-theme #sales-history-view {
+  color: #edf5ef;
+}
+
+body.dark-theme #sales-history-view .section-heading h2,
+body.dark-theme #sales-history-view .history-results-heading h3 {
+  color: #edf5ef;
+}
+
+body.dark-theme #sales-history-view .section-heading p,
+body.dark-theme #sales-history-view .history-results-heading p {
+  color: #b5c5ba;
+}
+
+body.dark-theme #sales-history-view .table-wrap {
+  background: #131d17;
+  border-color: #34483a;
+}
+
+body.dark-theme #sales-history-view .inventory-table {
+  background: #17231b;
+}
+
+body.dark-theme #sales-history-view .inventory-table th {
+  background: #20392b;
+  color: #dce9df;
+  border-bottom: 1px solid #405447;
+}
+
+body.dark-theme #sales-history-view .inventory-table td {
+  background: #17231b;
+  color: #edf5ef;
+  border-top-color: #34483a;
+}
+
+body.dark-theme #sales-history-view .inventory-table tbody tr:hover td {
+  background: #263d2e;
+  color: #ffffff;
+}
+
+body.dark-theme #sales-history-view .inventory-table .table-empty {
+  color: #b5c5ba !important;
+}
+
+body.dark-theme #sales-history-view .history-receipt-button {
+  background: #20392b;
+  border-color: #4e745b;
+  color: #a5e2b9;
+}
+
+body.dark-theme #sales-history-view .history-receipt-button:hover {
+  background: #2b4b36;
+  color: #ffffff;
+}
