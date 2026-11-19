@@ -4555,3 +4555,8 @@ body.dark-theme .settings-card-icon { color: #a5e2b9; background: #20392b; }
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Keep authentication completely hidden after successful login */
+.auth-layout.hidden {
+  display: none !important;
+}
