@@ -5480,3 +5480,114 @@ body.dark-theme #sales-history-view .history-receipt-button:hover {
     letter-spacing: -0.2px;
   }
 }
+
+/* ==========================================
+   DUKAPULSE PROFESSIONAL RECEIPT FINISH
+========================================== */
+
+.receipt-paper .receipt-brand {
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #173f2b;
+  color: #173f2b;
+  letter-spacing: 1.4px;
+}
+
+.receipt-paper .receipt-mark {
+  border: 1px solid #c5a653;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #173f2b, #0c2418);
+  color: #f1d88d;
+  font-weight: 900;
+  box-shadow: 0 2px 7px rgba(23, 63, 43, .18);
+}
+
+.receipt-paper .receipt-brand span:last-child {
+  font-weight: 900;
+}
+
+.receipt-paper .receipt-meta {
+  align-items: stretch;
+}
+
+.receipt-paper .receipt-meta > div,
+.receipt-paper .receipt-customer > div {
+  padding: 8px;
+  border: 1px solid #e2e9e3;
+  border-radius: 6px;
+  background: #f8faf8;
+}
+
+.receipt-paper .receipt-meta strong,
+.receipt-paper .receipt-customer strong {
+  line-height: 1.45;
+}
+
+.receipt-paper .receipt-customer {
+  border-bottom: 1px solid #dce5df;
+}
+
+.receipt-paper .receipt-items thead {
+  border-bottom: 2px solid #173f2b;
+}
+
+.receipt-paper .receipt-items tbody tr:last-child td {
+  border-bottom: 1px solid #aebdb2;
+}
+
+.receipt-paper .receipt-total {
+  border-top: 2px solid #173f2b;
+  border-bottom: 2px solid #173f2b;
+}
+
+.receipt-paper .receipt-payment {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px dashed #cbd5ce;
+}
+
+.receipt-paper .receipt-payment strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.receipt-paper .receipt-footer {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px dashed #cbd5ce;
+  color: #173f2b;
+  font-weight: 800;
+}
+
+.receipt-paper .receipt-powered {
+  margin-top: 7px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+}
+
+@media screen and (max-width: 480px) {
+  .receipt-paper .receipt-meta > div,
+  .receipt-paper .receipt-customer > div {
+    padding: 7px;
+  }
+}
+
+@media print {
+  .receipt-paper .receipt-meta > div,
+  .receipt-paper .receipt-customer > div {
+    background: #fff !important;
+    border-color: #ddd !important;
+  }
+
+  .receipt-paper .receipt-brand {
+    border-bottom-color: #000 !important;
+  }
+
+  .receipt-paper .receipt-total {
+    border-color: #000 !important;
+  }
+}
