@@ -1447,7 +1447,7 @@ async function loadSalesHistory() {
     const receiptButton = document.createElement("button");
     receiptButton.type = "button";
     receiptButton.className = "sales-receipt-button";
-    receiptButton.textContent = "View receipt";
+    receiptButton.textContent = "Generate Receipt";
     receiptButton.addEventListener("click", () => openSaleReceipt(sale.id));
     receiptCell.appendChild(receiptButton);
     row.appendChild(receiptCell);
@@ -2998,7 +2998,7 @@ async function loadFullSalesHistory() {
     const receiptButton = document.createElement("button");
     receiptButton.type = "button";
     receiptButton.className = "history-receipt-button";
-    receiptButton.textContent = "View receipt";
+    receiptButton.textContent = "Generate Receipt";
     receiptButton.addEventListener("click", () => openSaleReceipt(sale.id));
     receiptCell.appendChild(receiptButton);
     row.appendChild(receiptCell);
