@@ -5444,3 +5444,39 @@ body.dark-theme #sales-history-view .history-receipt-button:hover {
     padding: 11px 6px;
   }
 }
+
+/* DUKAPULSE 80MM RECEIPT COLUMN REFINEMENT */
+@media screen {
+  .receipt-paper[data-paper-width="80"] .receipt-items th:first-child,
+  .receipt-paper[data-paper-width="80"] .receipt-items td:first-child {
+    width: 30%;
+    text-align: left;
+  }
+
+  .receipt-paper[data-paper-width="80"] .receipt-items th:nth-child(2),
+  .receipt-paper[data-paper-width="80"] .receipt-items td:nth-child(2) {
+    width: 10%;
+    text-align: right;
+  }
+
+  .receipt-paper[data-paper-width="80"] .receipt-items th:nth-child(3),
+  .receipt-paper[data-paper-width="80"] .receipt-items td:nth-child(3) {
+    width: 28%;
+    text-align: right;
+  }
+
+  .receipt-paper[data-paper-width="80"] .receipt-items th:nth-child(4),
+  .receipt-paper[data-paper-width="80"] .receipt-items td:nth-child(4) {
+    width: 32%;
+    text-align: right;
+  }
+
+  .receipt-paper[data-paper-width="80"] .receipt-items td:nth-child(3),
+  .receipt-paper[data-paper-width="80"] .receipt-items td:nth-child(4) {
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+    font-size: 8.5px;
+    letter-spacing: -0.2px;
+  }
+}
