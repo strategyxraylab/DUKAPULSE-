@@ -5071,3 +5071,206 @@ body.dark-theme #sales-history-view .history-receipt-button:hover {
   background: #2b4b36;
   color: #ffffff;
 }
+
+/* ==========================================
+   DUKAPULSE THERMAL RECEIPTS V2
+   58mm / 80mm / A4 printing
+========================================== */
+
+.receipt-width-control {
+  display: flex;
+  flex: 1 1 145px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  color: #26352c;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.receipt-width-control select {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: 1px solid #cbd5ce;
+  border-radius: 8px;
+  background: #fff;
+  color: #14251d;
+  font: inherit;
+  font-size: 12px;
+}
+
+.receipt-paper {
+  box-sizing: border-box;
+  width: 80mm;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 6mm 5mm;
+  border-radius: 3px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .07);
+  font-family: Arial, sans-serif;
+}
+
+.receipt-paper[data-paper-width="58"] {
+  width: 58mm;
+  padding: 4mm 3mm;
+}
+
+.receipt-paper[data-paper-width="80"] {
+  width: 80mm;
+  padding: 6mm 5mm;
+}
+
+.receipt-paper[data-paper-width="a4"] {
+  width: 190mm;
+  padding: 12mm;
+}
+
+.receipt-paper .receipt-brand {
+  justify-content: center;
+  padding-bottom: 10px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+
+.receipt-paper .receipt-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.receipt-paper h2 {
+  margin: 13px 0 4px;
+  text-align: center;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.receipt-paper .receipt-thanks {
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 10px;
+}
+
+.receipt-paper .receipt-meta,
+.receipt-paper .receipt-customer {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.receipt-paper .receipt-meta span,
+.receipt-paper .receipt-customer span,
+.receipt-paper .receipt-payment span {
+  font-size: 9px;
+}
+
+.receipt-paper .receipt-meta strong,
+.receipt-paper .receipt-customer strong,
+.receipt-paper .receipt-payment strong {
+  font-size: 10px;
+}
+
+.receipt-paper .receipt-items {
+  margin: 12px 0;
+  table-layout: fixed;
+  font-size: 9px;
+}
+
+.receipt-paper .receipt-items th {
+  padding: 7px 2px;
+  font-size: 8px;
+}
+
+.receipt-paper .receipt-items td {
+  padding: 8px 2px;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+
+.receipt-paper .receipt-items th:first-child,
+.receipt-paper .receipt-items td:first-child {
+  width: 37%;
+  text-align: left;
+}
+
+.receipt-paper .receipt-items th:nth-child(2),
+.receipt-paper .receipt-items td:nth-child(2) {
+  width: 11%;
+}
+
+.receipt-paper .receipt-items th:nth-child(3),
+.receipt-paper .receipt-items td:nth-child(3) {
+  width: 24%;
+}
+
+.receipt-paper .receipt-items th:nth-child(4),
+.receipt-paper .receipt-items td:nth-child(4) {
+  width: 28%;
+}
+
+.receipt-paper .receipt-total {
+  padding: 12px 0;
+}
+
+.receipt-paper .receipt-total span {
+  font-size: 11px;
+}
+
+.receipt-paper .receipt-total strong {
+  font-size: 17px;
+}
+
+.receipt-paper .receipt-payment {
+  padding: 10px 0;
+}
+
+.receipt-paper .receipt-footer {
+  margin-top: 14px;
+  font-size: 10px;
+}
+
+.receipt-paper .receipt-powered {
+  font-size: 8px;
+}
+
+@media print {
+  .receipt-modal {
+    width: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .receipt-dialog {
+    width: 100% !important;
+  }
+
+  .receipt-paper {
+    width: var(--receipt-print-width, 80mm) !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 4mm !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .receipt-width-control {
+    display: none !important;
+  }
+
+  .receipt-paper .receipt-items th {
+    background: #eee !important;
+    color: #000 !important;
+  }
+
+  .receipt-paper .receipt-items td,
+  .receipt-paper .receipt-total strong,
+  .receipt-paper h2 {
+    color: #000 !important;
+  }
+}

@@ -1148,6 +1148,14 @@ async function openSaleReceipt(saleId) {
         <button type="button" class="receipt-print" data-receipt-print disabled>
           Print / Save PDF
         </button>
+        <label class="receipt-width-control">
+          Paper size
+          <select data-receipt-width aria-label="Receipt paper size">
+            <option value="58">58mm thermal</option>
+            <option value="80" selected>80mm thermal</option>
+            <option value="a4">A4 / PDF</option>
+          </select>
+        </label>
       </div>
 
       <p class="receipt-loading" data-receipt-loading>Loading saved receipt...</p>
@@ -1219,6 +1227,14 @@ async function openSaleReceipt(saleId) {
   const closeButton = modal.querySelector("[data-receipt-close]");
   const printButton = modal.querySelector("[data-receipt-print]");
   const shareButton = modal.querySelector("[data-receipt-whatsapp]");
+  const widthSelect = modal.querySelector("[data-receipt-width]");
+  const receiptPaper = modal.querySelector("[data-receipt-paper]");
+
+  widthSelect.addEventListener("change", () => {
+    receiptPaper.dataset.paperWidth = widthSelect.value;
+  });
+
+  receiptPaper.dataset.paperWidth = widthSelect.value;
 
   closeButton.addEventListener("click", closeSaleReceipt);
 
@@ -1227,6 +1243,28 @@ async function openSaleReceipt(saleId) {
   });
 
   printButton.addEventListener("click", () => {
+    const selectedWidth = widthSelect.value;
+    receiptPaper.dataset.paperWidth = selectedWidth;
+    receiptPaper.style.setProperty(
+      "--receipt-print-width",
+      selectedWidth === "a4" ? "190mm" : `${selectedWidth}mm`
+    );
+
+    const pageRule = selectedWidth === "a4"
+      ? "@page { size: A4; margin: 10mm; }"
+      : "@page { size: auto; margin: 0; }";
+
+    const printStyle = document.createElement("style");
+    printStyle.dataset.receiptPrintStyle = "true";
+    printStyle.textContent = `@media print { ${pageRule} }`;
+    document.head.appendChild(printStyle);
+
+    const cleanupPrintStyle = () => {
+      printStyle.remove();
+      window.removeEventListener("afterprint", cleanupPrintStyle);
+    };
+
+    window.addEventListener("afterprint", cleanupPrintStyle, { once: true });
     window.print();
   });
 
