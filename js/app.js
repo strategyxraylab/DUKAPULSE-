@@ -1073,6 +1073,10 @@ function renderSalesCart() {
   });
 
   totalElement.textContent = formatKES(total);
+
+  if (typeof updateCashPaymentPreview === "function") {
+    updateCashPaymentPreview();
+  }
 }
 
 document.getElementById("add-sale-item").addEventListener("click", () => {
@@ -1205,8 +1209,27 @@ async function openSaleReceipt(saleId) {
         </table>
 
         <div class="receipt-total">
-          <span>Sale total</span>
+          <span>GRAND TOTAL</span>
           <strong data-receipt-total></strong>
+        </div>
+
+        <div class="receipt-settlement">
+          <div data-receipt-cash-row hidden>
+            <span>Cash received</span>
+            <strong data-receipt-cash></strong>
+          </div>
+          <div data-receipt-change-row hidden>
+            <span>Change given</span>
+            <strong data-receipt-change></strong>
+          </div>
+          <div data-receipt-balance-row hidden>
+            <span>Balance due</span>
+            <strong data-receipt-balance></strong>
+          </div>
+          <div data-receipt-cashier-row hidden>
+            <span>Cashier</span>
+            <strong data-receipt-cashier></strong>
+          </div>
         </div>
 
         <div class="receipt-payment">
@@ -1271,7 +1294,7 @@ async function openSaleReceipt(saleId) {
   try {
     const { data: sale, error: saleError } = await supabaseClient
       .from("sales")
-      .select("id, total_amount, payment_method, sold_at, customer_name, customer_phone")
+      .select("id, total_amount, payment_method, sold_at, customer_name, customer_phone, cash_received, change_given, balance_due, cashier_name")
       .eq("id", saleId)
       .eq("business_id", currentBusinessRecord.id)
       .single();
@@ -1300,6 +1323,38 @@ async function openSaleReceipt(saleId) {
       formatKES(sale.total_amount);
     modal.querySelector("[data-receipt-payment]").textContent =
       sale.payment_method || "Not specified";
+
+    const cashReceived = sale.cash_received === null ||
+      sale.cash_received === undefined
+      ? null
+      : Number(sale.cash_received);
+    const changeGiven = Number(sale.change_given || 0);
+    const balanceDue = Number(sale.balance_due || 0);
+    const cashierName = (sale.cashier_name || "").trim();
+
+    if (cashReceived !== null && Number.isFinite(cashReceived)) {
+      modal.querySelector("[data-receipt-cash-row]").hidden = false;
+      modal.querySelector("[data-receipt-cash]").textContent =
+        formatKES(cashReceived);
+    }
+
+    if (changeGiven > 0) {
+      modal.querySelector("[data-receipt-change-row]").hidden = false;
+      modal.querySelector("[data-receipt-change]").textContent =
+        formatKES(changeGiven);
+    }
+
+    if (balanceDue > 0) {
+      modal.querySelector("[data-receipt-balance-row]").hidden = false;
+      modal.querySelector("[data-receipt-balance]").textContent =
+        formatKES(balanceDue);
+    }
+
+    if (cashierName) {
+      modal.querySelector("[data-receipt-cashier-row]").hidden = false;
+      modal.querySelector("[data-receipt-cashier]").textContent =
+        cashierName;
+    }
 
     const customerName = (sale.customer_name || "").trim();
     const customerPhone = (sale.customer_phone || "").trim();
@@ -1354,8 +1409,18 @@ async function openSaleReceipt(saleId) {
         `${item.product_name || "Product"} x ${item.quantity} - ${formatKES(item.line_total)}`
       ),
       "",
-      `Total: ${formatKES(sale.total_amount)}`,
+      `GRAND TOTAL: ${formatKES(sale.total_amount)}`,
+      ...(cashReceived !== null && Number.isFinite(cashReceived)
+        ? [`Cash received: ${formatKES(cashReceived)}`]
+        : []),
+      ...(changeGiven > 0
+        ? [`Change given: ${formatKES(changeGiven)}`]
+        : []),
+      ...(balanceDue > 0
+        ? [`Balance due: ${formatKES(balanceDue)}`]
+        : []),
       `Payment: ${sale.payment_method || "Not specified"}`,
+      ...(cashierName ? [`Cashier: ${cashierName}`] : []),
       "",
       "Thank you for shopping with us."
     ].join("\n");
@@ -1468,21 +1533,72 @@ const salePaidMethodField = document.getElementById("sale-paid-method-field");
 const saleDepositInput = document.getElementById("sale-credit-deposit");
 const saleDepositMethodField =
   document.getElementById("sale-credit-deposit-method-field");
+const saleCashFields = document.getElementById("sale-cash-fields");
+const saleCashInput = document.getElementById("sale-cash-received");
+const saleCashDueDate = document.getElementById("sale-cash-due-date");
+const salePaymentMethod = document.getElementById("sale-payment-method");
+
+function getCurrentSaleCartTotal() {
+  return saleCart.reduce((sum, item) => {
+    const product = availableSaleProducts.find(
+      product => product.id === item.product_id
+    );
+
+    return sum + (
+      product
+        ? Number(product.selling_price) * Number(item.quantity)
+        : 0
+    );
+  }, 0);
+}
+
+function updateCashPaymentPreview() {
+  if (!saleCashInput) return;
+
+  const total = getCurrentSaleCartTotal();
+  const rawCash = saleCashInput.value.trim();
+  const received = rawCash === "" ? 0 : Number(rawCash);
+  const validCash = Number.isFinite(received) && received >= 0;
+  const cash = validCash ? received : 0;
+  const difference = cash - total;
+
+  document.getElementById("sale-cash-preview").textContent =
+    formatKES(cash);
+
+  if (difference >= 0) {
+    document.getElementById("sale-cash-result-label").textContent =
+      "Change to give";
+    document.getElementById("sale-cash-result").textContent =
+      formatKES(difference);
+  } else {
+    document.getElementById("sale-cash-result-label").textContent =
+      "Balance due";
+    document.getElementById("sale-cash-result").textContent =
+      formatKES(Math.abs(difference));
+  }
+}
 
 function updateSalePaymentFields() {
   const isCredit = salePaymentType.value === "credit";
+  const isCash = !isCredit && salePaymentMethod.value === "Cash";
   const hasDeposit = Number(saleDepositInput.value) > 0;
 
   saleCreditFields.classList.toggle("hidden", !isCredit);
   salePaidMethodField.classList.toggle("hidden", isCredit);
+  saleCashFields.classList.toggle("hidden", !isCash);
+
   saleDepositMethodField.classList.toggle(
     "hidden",
     !isCredit || !hasDeposit
   );
+
+  updateCashPaymentPreview();
 }
 
 salePaymentType.addEventListener("change", updateSalePaymentFields);
+salePaymentMethod.addEventListener("change", updateSalePaymentFields);
 saleDepositInput.addEventListener("input", updateSalePaymentFields);
+saleCashInput.addEventListener("input", updateCashPaymentPreview);
 
 document.getElementById("complete-sale").addEventListener("click", async () => {
   const button = document.getElementById("complete-sale");
@@ -1552,11 +1668,39 @@ document.getElementById("complete-sale").addEventListener("click", async () => {
         p_due_date:
           document.getElementById("sale-credit-due-date").value || null
       }));
+    } else if (salePaymentMethod.value === "Cash") {
+      const cashRaw = saleCashInput.value.trim();
+
+      if (cashRaw === "") {
+        throw new Error("Enter the amount of cash received.");
+      }
+
+      const cashReceived = Number(cashRaw);
+
+      if (!Number.isFinite(cashReceived) || cashReceived < 0) {
+        throw new Error("Enter a valid cash amount.");
+      }
+
+      const cartTotal = getCurrentSaleCartTotal();
+
+      if (cashReceived < cartTotal && !customerName) {
+        throw new Error(
+          "Enter the customer's name to record the unpaid balance."
+        );
+      }
+
+      ({ data, error } = await supabaseClient.rpc("record_cash_sale", {
+        p_business_id: currentBusinessRecord.id,
+        p_items: items,
+        p_customer_name: customerName || null,
+        p_customer_phone: customerPhone || null,
+        p_cash_received: cashReceived,
+        p_due_date: saleCashDueDate.value || null
+      }));
     } else {
       ({ data, error } = await supabaseClient.rpc("record_sale", {
         p_business_id: currentBusinessRecord.id,
-        p_payment_method:
-          document.getElementById("sale-payment-method").value,
+        p_payment_method: salePaymentMethod.value,
         p_items: items,
         p_customer_name: customerName || null,
         p_customer_phone: customerPhone || null
@@ -1570,6 +1714,8 @@ document.getElementById("complete-sale").addEventListener("click", async () => {
     document.getElementById("sale-customer-phone").value = "";
     salePaymentType.value = "paid";
     saleDepositInput.value = "0";
+    saleCashInput.value = "";
+    saleCashDueDate.value = "";
     document.getElementById("sale-credit-deposit-method").value = "Cash";
     document.getElementById("sale-credit-due-date").value = "";
     updateSalePaymentFields();
@@ -1579,6 +1725,16 @@ document.getElementById("complete-sale").addEventListener("click", async () => {
       showMessage(
         "sales-message",
         `Credit sale recorded! Outstanding balance: ${formatKES(data.outstanding_balance)}`
+      );
+    } else if (data.balance_due > 0) {
+      showMessage(
+        "sales-message",
+        `Part-payment recorded! Balance due: ${formatKES(data.balance_due)}`
+      );
+    } else if (salePaymentMethod.value === "Cash") {
+      showMessage(
+        "sales-message",
+        `Cash sale saved! Change to give: ${formatKES(data.change_given)}`
       );
     } else {
       showMessage(
